@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn';
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('rounded-lg border border-neutral-200 bg-white shadow-sm', className)}
+      className={cn('rounded-xl border border-neutral-200 bg-white shadow-xs', className)}
       {...props}
     />
   );
@@ -30,7 +30,7 @@ export function CardHeader({
       )}
     >
       <div className="min-w-0">
-        <h2 className="text-base font-semibold text-neutral-900">{title}</h2>
+        <h2 className="text-sm font-semibold text-neutral-900">{title}</h2>
         {description !== undefined ? (
           <p className="mt-1 text-sm text-neutral-500">{description}</p>
         ) : null}

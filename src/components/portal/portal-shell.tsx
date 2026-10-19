@@ -91,7 +91,7 @@ export function PortalShell({ slug, children }: { slug: PortalSlug; children: Re
       {/* The rail is fixed, so the content pane is offset by its width. */}
       <div className={cn('transition-[padding] duration-200', collapsed ? 'lg:pl-16' : 'lg:pl-64')}>
         <Topbar onOpenMobileMenu={() => setMobileOpen(true)} />
-        <main className="mx-auto max-w-7xl px-4 py-6">
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {mayOpen(portal, pathname) ? (
             children
           ) : (

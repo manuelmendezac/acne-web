@@ -490,21 +490,21 @@ function PrescriptionCard({
                 <Send className="h-3 w-3 shrink-0" aria-hidden />
                 {delivery.channelLabel} → {delivery.destination} · {dateTime(delivery.sentAt)}
                 {delivery.simulated ? (
-                  <Badge variant="warning" className="text-[10px]">
+                  <Badge variant="warning" className="text-xs">
                     simulado
                   </Badge>
                 ) : delivery.successful ? (
-                  <Badge variant="success" className="text-[10px]">
+                  <Badge variant="success" className="text-xs">
                     aceptado
                   </Badge>
                 ) : (
-                  <Badge variant="danger" className="text-[10px]">
+                  <Badge variant="danger" className="text-xs">
                     rechazado
                   </Badge>
                 )}
               </p>
               {!delivery.simulated && delivery.detail !== null ? (
-                <p className="ml-5 text-[11px] text-neutral-400">{delivery.detail}</p>
+                <p className="ml-5 text-xs text-neutral-400">{delivery.detail}</p>
               ) : null}
             </div>
           ))}

@@ -3,6 +3,7 @@
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
+import { PageHeader } from '@/components/portal/page-header';
 import { UserTable } from '@/components/portal/user-table';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { usePortalHref } from '@/lib/use-portal';
@@ -18,19 +19,16 @@ export default function UsuariosPage(): JSX.Element {
   const href = usePortalHref();
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">Usuarios</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Todo el personal del estudio: quien diagnostica, quien recibe al paciente, quien
-            analiza y quien administra (RF-TR-02).
-          </p>
-        </div>
-        <Link href={href('/usuarios/nuevo')} className={buttonVariants({ variant: 'primary' })}>
-          <Plus className="h-4 w-4" aria-hidden />
-          Nuevo usuario
-        </Link>
-      </header>
+      <PageHeader
+        title="Usuarios"
+        description="Todo el personal del estudio: quien diagnostica, quien recibe al paciente, quien analiza y quien administra."
+        actions={
+          <Link href={href('/usuarios/nuevo')} className={buttonVariants({ variant: 'primary' })}>
+            <Plus className="h-4 w-4" aria-hidden />
+            Nuevo usuario
+          </Link>
+        }
+      />
 
       <UserTable />
     </div>

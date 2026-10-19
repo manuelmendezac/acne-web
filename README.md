@@ -1,7 +1,7 @@
 # acne-web
 
-Portal del dermatólogo y PWA del paciente del prototipo de diagnóstico asistido de acné con
-inteligencia artificial — **Tesis UNT 2026**.
+**Dermatrix** — portal del personal (administración, consulta y admisión) del prototipo de
+diagnóstico asistido de acné — **Tesis UNT 2026**.
 
 Next.js 14 (App Router) · TypeScript estricto · Tailwind CSS v4 · Recharts
 
@@ -12,19 +12,19 @@ Next.js 14 (App Router) · TypeScript estricto · Tailwind CSS v4 · Recharts
 Soporta la tesis **«Agilización del proceso de diagnóstico de acné mediante inteligencia
 artificial en un centro especializado en dermatología»** (Universidad Nacional de Trujillo, 2026).
 
-Un solo frontend sirve **dos experiencias por routing**, tal como establece la Sección 4 del
-documento maestro:
+**El paciente nunca opera el sistema**: todo lo hace el personal del centro. La raíz del sitio es
+el inicio de sesión y cada cuenta entra a su portal según el rol:
 
 | Ruta | Experiencia |
 |---|---|
+| `/` | Redirige a `/login` |
 | `/admin/**` | Portal del administrador: pacientes, casos, indicadores, estadística, anexos, usuarios y auditoría |
-| `/dermatologo/**` | Portal de consulta: pacientes e historia clínica, casos, anamnesis, diagnóstico cronometrado, jornada, indicadores, encuesta y anexos |
+| `/dermatologo/**` | Portal de consulta: pacientes e historia clínica, casos, anamnesis, diagnóstico cronometrado, jornada, encuesta |
 | `/tecnico/**` | Portal de admisión: pacientes, alta de caso, anamnesis y código QR de captura. Nada del análisis del estudio |
-| `/captura/<token>` | Envío de fotografías desde el teléfono, abierto con el código QR del ingreso. Sin sesión |
-| `/app/**` | PWA del paciente: captura guiada de imagen e historial |
+| `/captura/<token>` | Captura de fotografías desde el teléfono del personal, abierta con el código QR de la ficha del caso. Sin sesión |
 
-El inicio de sesión lleva a cada cuenta a su portal según el rol; no hay una pantalla intermedia
-donde elegir. Un enlace al portal ajeno redirige al propio en silencio: quien lo abrió no hizo nada
+Hasta el 19/10/2026 existió además una presentación en `/` y una PWA del paciente en `/app/**`;
+ambas se retiraron porque el paciente no usa el sistema por su cuenta. Un enlace al portal ajeno redirige al propio en silencio: quien lo abrió no hizo nada
 mal, y una pantalla de error solo le enseñaría que el sistema es poco fiable.
 
 > **Aviso:** Herramienta de apoyo diagnóstico con fines de investigación académica. No sustituye el
@@ -93,19 +93,27 @@ nada más, y que no exista ningún otro CSS. Falla con un mensaje concreto y est
 
 ### Paleta
 
-Un solo modo, **claro**, y dos acentos de la misma familia:
+Un solo modo, **claro**, y un solo acento:
 
 | Rol | Color | Dónde |
 |---|---|---|
-| Marca | `purple` | Cromo, botones primarios, enlaces, elemento activo del menú, anillos de foco |
-| Datos | `violet` | Serie postest de los gráficos, insignia de postest, PWA del paciente |
+| Marca | `purple` | Botones primarios, enlaces, elemento activo del menú, anillos de foco, insignia de postest, clase sugerida |
 | Acuerdo / meta cumplida | `emerald` | Diagonal de la matriz de confusión, insignias de meta |
 | Error / aviso | `red` · `amber` | Fuera de la diagonal, alertas |
-| Todo lo demás | `neutral` | Superficies, texto, bordes, y la serie **pretest** |
+| Todo lo demás | `neutral` | Superficies, texto, bordes, la barra lateral oscura (`neutral-950`) y la serie **pretest** |
 
-Los tres últimos son **semánticos y no siguen a la marca**: verde significa acertado y rojo
-equivocado, y repintarlos de violeta costaría la única lectura para la que existe una matriz de
-confusión.
+La evaluación asistida **no tiene un color propio**: hasta el 19/10/2026 todo lo que tocaba el
+modelo iba en `violet`, lo que la hacía destacar como «la parte de IA» de una pantalla clínica.
+Ahora usa el morado de la marca como cualquier otra acción del sistema; `violet` solo sobrevive como
+hexadecimal en la serie postest de los gráficos.
+
+Verde, rojo y ámbar son **semánticos y no siguen a la marca**: verde significa acertado y rojo
+equivocado, y repintarlos costaría la única lectura para la que existe una matriz de confusión.
+
+**Tipografía:** Inter en todos los pesos. Título de página `text-xl font-semibold tracking-tight`
+(`PageHeader`), títulos de tarjeta `text-sm font-semibold`, etiquetas `text-xs text-neutral-500`;
+no hay tamaños arbitrarios (`text-[10px]`, `text-[11px]`). Tarjetas `rounded-xl` con `shadow-xs`;
+sin degradados.
 
 Los gráficos de Recharts se estilan por props y atributos SVG, no por clases, así que su paleta se
 repite como literales hexadecimales con la clase que representan anotada al lado. Esa anotación es
@@ -171,11 +179,18 @@ condición de tiempo de ejecución, que es además lo que la tesis tiene que des
 - **El cronómetro es invisible.** Abrir un caso hace `POST /cases/:id/open`, que sella `t₀` en el
   servidor; enviar el diagnóstico sella `t₁`. No hay contador en pantalla: verlo correr cambiaría
   el ritmo del profesional y sesgaría justamente la medición que OE1 intenta capturar.
-- **En pretest no hay rastro de la IA.** Ni panel, ni marcador de posición, ni sección «oculta»:
-  se muestra `<StudyModeBlocked />`, que explica que el bloqueo es parte del diseño y que se
-  aplica en el servidor. Si el usuario fuerza la ruta, la API responde 403 (RF-TR-01).
-- **El formulario no preselecciona la sugerencia de la IA.** Rellenar la respuesta del médico con
-  la del modelo convertiría el «diagnóstico asistido» en una confirmación, y la tasa de
+- **En pretest no hay rastro de la evaluación asistida.** Ni panel, ni marcador de posición, ni
+  sección «oculta»: se muestra `<StudyModeBlocked />`, que explica que la restricción es parte del
+  estudio y que se aplica en el servidor. Si el usuario fuerza la ruta, la API responde 403
+  (RF-TR-01).
+- **El personal no ve la palabra «IA».** En los portales de consulta y admisión la sugerencia del
+  modelo se llama «evaluación asistida» o «sugerencia del sistema», los modelos son
+  «clasificadores», el Grad-CAM es el «mapa de atención» y las fases son «pretest» y «postest» a
+  secas. El vocabulario técnico (IA, modelo, CNN, IIA) queda en Administración —indicadores,
+  estadística, anexos y auditoría—, que es donde la tesis lo necesita. Lo que se mide es el apoyo
+  al diagnóstico, no la impresión de estar usando inteligencia artificial.
+- **El formulario no preselecciona la sugerencia del sistema.** Rellenar la respuesta del médico
+  con la del modelo convertiría el «diagnóstico asistido» en una confirmación, y la tasa de
   concordancia que mide OE2 dejaría de significar algo.
 - **El nombre del paciente se ve, el dato se mantiene anonimizado.** RF-TR-03 cifra la identidad y
   la reserva al profesional tratante; no le pide trabajar a ciegas. La bandeja y el selector de
@@ -300,38 +315,49 @@ La paleta de grises es **`neutral`**, no `slate`. `slate` lleva croma dentro (~0
 superficie grande se lee como azul marino; `neutral` tiene croma 0 y sus luminancias caen dentro del
 1 % de las de `slate` en todos los escalones, de modo que el cambio no altera ningún contraste.
 
-El **acento es `purple`**, con `violet` como segundo acento para los datos. Ese emparejamiento es
-funcional, no decorativo: el gris identifica la condición pretest y el violeta la postest en toda la
-interfaz, de modo que el especialista distingue por color bajo qué condición está registrando. La
-marca es la misma en el isotipo, en los iconos de la PWA y en la ilustración del login, que se
-recolorearon a mano por ser SVG con colores propios y no clases.
+El **acento es `purple`**, y solo uno: el gris identifica la condición pretest y el morado la
+postest en toda la interfaz, de modo que el especialista distingue por color bajo qué condición se
+registró cada caso. La marca es la misma en el isotipo (`BrandMark`), en los iconos del manifiesto
+(`public/icons/`) y en el favicon (`src/app/icon.svg`); los SVG estáticos repiten el hex del token
+(`#581c87` = `purple-900`, `#d8b4fe` = `purple-300`).
 
 Verde, rojo y ámbar **no siguen a la marca**: son semánticos —acertado, equivocado, atención— y
 repintarlos costaría la lectura para la que existen.
 
-**Una sola familia**: Inter, en todos los pesos. Los títulos usaban Poppins; sus formas geométricas
-se leían como publicidad junto a una tabla de treinta tiempos de revisión, y las clases de peso ya
-hacían la jerarquía.
+**Una sola familia**: Inter, en todos los pesos. Los títulos usaron Poppins hasta 09/2026; sus
+formas geométricas se leían como publicidad junto a una tabla de treinta tiempos de revisión, y las
+clases de peso ya hacían la jerarquía.
+
+**Cromo del portal.** La barra lateral es oscura (`neutral-950`) con el `Wordmark` arriba y solo
+las etiquetas de sección: los códigos de objetivos y requisitos siguen declarados en `portals.ts`
+pero no se muestran en el menú. La barra superior lleva la miga (`Consulta / Casos`) y la cuenta;
+el título de cada página lo pone `PageHeader`, de modo que ninguna pantalla dice dos veces dónde
+está.
 
 Todo el color va como clase de utilidad en el JSX; `src/app/globals.css` tiene una sola línea y
 `pnpm lint:css` lo verifica en CI. Las excepciones inevitables son las paletas de Recharts, la rampa
 de la matriz de confusión y los SVG de marca, que necesitan cadenas de color y no clases: viven
 junto a su componente, con el token de Tailwind anotado al lado de cada hex.
 
-## Ilustración del login
+## Marca y login
 
-La mitad derecha del login la dibuja `src/components/brand/clinic-illustration.tsx`: un SVG hecho a
-mano que amplía el motivo del icono de la PWA. Se dibujó en vez de fotografiarse porque no hay
-ninguna fotografía clínica con licencia para el repositorio, porque una cara de banco de imágenes
-daría a entender que el prototipo ha visto un paciente real, y porque un SVG se mantiene nítido en el
-proyector de una defensa.
+El producto se llama **Dermatrix** (`PRODUCT_NAME` en `src/lib/constants.ts`). El isotipo es una
+losa morada con una retícula de 3 × 3 puntos cuya diagonal está encendida: la retícula es la matriz
+de tomas y lecturas con la que trabaja el sistema, los puntos la textura de la piel, la diagonal lo
+ya examinado. `src/components/brand/brand-mark.tsx` lo dibuja como componente y
+`src/components/brand/wordmark.tsx` lo acompaña del nombre, con `tone="dark"` para la barra lateral
+y el panel del login.
 
-Para usar una fotografía, deje el archivo en `public/` y sustituya el cuerpo del componente por un
-`<img>` con las mismas clases de relleno absoluto. No hay que tocar nada más.
+El login (`src/app/login/page.tsx`) es la portada del sitio: un panel oscuro con el `Wordmark`, la
+descripción del producto y un campo de puntos SVG que extiende la retícula del isotipo, y el
+formulario a la derecha. La universidad aparece como crédito al pie; el título de la tesis no, porque
+quien entra es personal de un centro y no un jurado. No hay fotografías: ninguna fotografía clínica
+tiene licencia para el repositorio, y una cara de banco de imágenes daría a entender que el prototipo
+ha visto un paciente real.
 
 ## Aviso regulatorio
 
 El aviso de RNF-06 vive en los **reportes PDF** —completo tras las referencias y abreviado al pie de
 cada página—, que es donde el requisito lo pide: «todo *reporte* incluye disclaimer». Se retiró del
 cromo de la interfaz, donde estaba repetido en cinco pantallas. La página móvil de captura conserva
-su aviso de protección de datos, que es RNF-07 y va dirigido al paciente.
+una nota de protección de datos (cifrado y auditoría del envío), dirigida al personal que la opera.

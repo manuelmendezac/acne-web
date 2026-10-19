@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Brain, Camera, CheckCircle2, ImageOff, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, Camera, CheckCircle2, ImageOff, Layers, RefreshCw, ScanFace } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -221,9 +221,9 @@ export default function CasoDetallePage() {
   // and the physician reads this label as evidence of how the suggestion was formed.
   const isCnn = detail.inference?.modelBackend === 'torch';
   const overlayPhrase = isCnn
-    ? 'el mapa de calor Grad-CAM'
-    : 'las regiones señaladas por el modelo';
-  const overlayAction = isCnn ? 'Ver Grad-CAM' : 'Ver regiones';
+    ? 'el mapa de atención (Grad-CAM)'
+    : 'las regiones señaladas por el análisis';
+  const overlayAction = isCnn ? 'Ver mapa de atención' : 'Ver regiones';
 
   const diagnoses = detail.diagnoses as unknown as CaseDiagnosis[];
   // Toda medición del sistema es postest; el pretest lo transcribe el administrador desde el
@@ -350,7 +350,7 @@ export default function CasoDetallePage() {
                     size="sm"
                     onClick={() => setShowHeatmap((value) => !value)}
                   >
-                    <Sparkles className="h-4 w-4" aria-hidden />
+                    <Layers className="h-4 w-4" aria-hidden />
                     {showHeatmap ? 'Ver original' : overlayAction}
                   </Button>
                 ) : null
@@ -373,7 +373,8 @@ export default function CasoDetallePage() {
                   />
                   {displayed.isHeatmap && heatmapOwner !== undefined ? (
                     <p className="mt-2 text-xs text-neutral-500">
-                      Grad-CAM de <strong className="text-neutral-900">{heatmapOwner.tag}</strong>
+                      Mapa de atención de{' '}
+                      <strong className="text-neutral-900">{heatmapOwner.tag}</strong>
                       {' · '}
                       {igaLabel(catalogs, heatmapOwner.igaClass)} ({pct(heatmapOwner.confidence * 100)})
                     </p>
@@ -410,15 +411,18 @@ export default function CasoDetallePage() {
           <AnamnesisSummary caseId={detail.id} />
 
           <Card>
-            <CardHeader title="Diagnóstico preliminar de la IA" />
+            <CardHeader
+              title="Evaluación asistida"
+              description="Sugerencia del sistema a partir de las fotografías y la anamnesis. No sustituye el juicio clínico."
+            />
             <CardBody>
               {!detail.aiVisible ? (
                 <StudyModeBlocked />
               ) : detail.inference === null ? (
                 <div className="space-y-3">
                   <p className="text-sm text-neutral-500">
-                    Este caso aún no tiene una inferencia. Encólela para obtener la clase IGA
-                    sugerida y las regiones que el modelo señale.
+                    Este caso aún no se ha analizado. Solicite el análisis para obtener la clase IGA
+                    sugerida y las zonas en que se apoya.
                   </p>
                   {canDiagnose ? (
                     <>
@@ -434,8 +438,8 @@ export default function CasoDetallePage() {
                           });
                         }}
                       >
-                        <Brain className="h-4 w-4" aria-hidden />
-                        Solicitar inferencia
+                        <ScanFace className="h-4 w-4" aria-hidden />
+                        Analizar el caso
                       </Button>
                       {requestInference.error !== null ? (
                         requestInference.error.isStudyModeBlock ? (
@@ -447,14 +451,14 @@ export default function CasoDetallePage() {
                     </>
                   ) : (
                     <p className="text-sm text-neutral-500">
-                      La inferencia todavía no está disponible para este caso.
+                      El análisis todavía no está disponible para este caso.
                     </p>
                   )}
                 </div>
               ) : detail.inference.status === 'fallido' ? (
-                <Alert tone="danger" title="La inferencia falló">
+                <Alert tone="danger" title="El análisis falló">
                   {detail.inference.errorMessage ??
-                    'El motor no devolvió una lectura. Puede solicitarla de nuevo.'}
+                    'El servicio de análisis no devolvió una lectura. Puede solicitarla de nuevo.'}
                   <Button variant="ghost" size="sm" className="mt-2" onClick={() => void open()}>
                     Actualizar
                   </Button>
@@ -463,8 +467,8 @@ export default function CasoDetallePage() {
                 <div className="space-y-3">
                   <AnalysisProgress status={detail.inference.status} />
                   <p className="text-xs text-neutral-500">
-                    La cola procesa la imagen de forma asíncrona para que la latencia del modelo no
-                    se sume al tiempo de revisión médica que mide OE1.
+                    El análisis se procesa en segundo plano para que su duración no se sume al
+                    tiempo de revisión médica.
                   </p>
                   <Button variant="ghost" size="sm" onClick={() => void open()}>
                     <RefreshCw className="h-4 w-4" aria-hidden />
@@ -476,7 +480,7 @@ export default function CasoDetallePage() {
                   {noAcne !== null ? (
                     <Alert
                       tone="warning"
-                      title={noSuggestion ? 'Sin sugerencia de IA' : noAcne.title}
+                      title={noSuggestion ? 'Sin sugerencia del sistema' : noAcne.title}
                     >
                       {noAcne.message}
                     </Alert>
@@ -494,7 +498,7 @@ export default function CasoDetallePage() {
                         <p className="text-xs text-neutral-500">
                           {caseSuggestion !== null ? 'Clase IGA sugerida para el caso' : 'Clase IGA sugerida'}
                         </p>
-                        <p className="text-2xl font-bold text-violet-700">
+                        <p className="text-2xl font-bold text-purple-900">
                           {igaLabel(catalogs, caseSuggestion?.igaClass ?? detail.inference.igaClass)}
                         </p>
                       </div>
@@ -524,7 +528,7 @@ export default function CasoDetallePage() {
                             </span>
                             <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
                               <div
-                                className="h-full rounded-full bg-violet-700"
+                                className="h-full rounded-full bg-purple-900"
                                 style={{ width: `${Math.round(probability * 100)}%` }}
                               />
                             </div>
@@ -577,10 +581,10 @@ export default function CasoDetallePage() {
 
                   {detail.inference.modelBackend === 'stub' ? (
                     <Alert tone="warning" title="Backend de demostración">
-                      El motor opera con el clasificador determinista{' '}
+                      El servicio de análisis opera en modo de demostración{' '}
                       <code>{detail.inference.modelVersion}</code>. Esta sugerencia{' '}
-                      <strong>no proviene de una CNN entrenada</strong> y no puede citarse como
-                      resultado de la tesis.
+                      <strong>no proviene del clasificador entrenado</strong> y no puede citarse
+                      como resultado.
                     </Alert>
                   ) : null}
                 </div>

@@ -5,6 +5,38 @@ versionado con [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Changed — Dermatrix: sin vía del paciente y rediseño del portal (19/10/2026)
+
+- **El paciente ya no opera el sistema.** Se retiran la presentación de `/` (dos puertas: personal
+  y paciente) y la PWA del paciente (`/app/**`, con su service worker y su manifiesto). La raíz
+  redirige a `/login`. La captura por QR (`/captura/<token>`) se conserva, operada por el técnico o
+  el dermatólogo desde su teléfono; sus textos ya no se dirigen al paciente.
+- **Nombre y marca.** El producto se llama **Dermatrix**: isotipo nuevo (losa morada con retícula
+  3 × 3 y diagonal encendida), `Wordmark`, iconos del manifiesto y favicon (`src/app/icon.svg`),
+  título de la pestaña y descripción sin «inteligencia artificial». «Acné UNT» desaparece de la
+  interfaz; la universidad queda como crédito al pie del login.
+- **Vocabulario clínico, sin «IA», en consulta y admisión.** «Análisis con IA» → «Análisis
+  asistido»; «Diagnóstico preliminar de la IA» → «Evaluación asistida»; «sugerida por IA» →
+  «sugerencia del sistema»; «modelo» → «clasificador», «Ensemble» → «Combinado»; «Ver Grad-CAM» →
+  «Ver mapa de atención»; «Pretest · sin IA / Postest · con IA» → «Fase pretest / Fase postest»;
+  el bloqueo de pretest se titula «Evaluación asistida no disponible en esta fase». Sin iconos de
+  cerebro ni destellos. Administración (indicadores, estadística, anexos, auditoría) conserva el
+  vocabulario de la tesis.
+- **Cromo rediseñado.** Barra lateral oscura con el `Wordmark` y solo las etiquetas de sección (sin
+  «TRM · TPD · TSP · TCAD» ni códigos de requisitos en el menú); barra superior con miga y cuenta;
+  `PageHeader` como único título de página (antes cada pantalla y la barra lo repetían). Login
+  nuevo: panel de marca con campo de puntos y formulario centrado.
+- **Paleta y escala.** `violet` deja de ser «el color de la IA»: todo pasa a `purple`. Se eliminan
+  los tamaños arbitrarios `text-[10px]` y `text-[11px]` (34 usos → `text-xs`). Tarjetas
+  `rounded-xl shadow-xs`; insignias y fichas del caso sin arcoíris de iconos.
+
+### Fixed — clases de utilidad que nunca se aplicaban (19/10/2026)
+
+- `button-variants.ts` y `field.tsx` concatenaban cadenas de clases sin espacio
+  (`…ring-purple-900focus-visible:…`, `…text-neutral-900placeholder:…`), de modo que el anillo de
+  foco con desplazamiento, el estado `disabled` del botón, el color del placeholder y el anillo de
+  foco de los campos y las casillas no existían. Corregido.
+
 ### Fixed — captura por QR desde la imagen Docker (23/09/2026)
 
 - `NEXT_PUBLIC_API_URL` queda vacío por defecto en el `Dockerfile`. Con `localhost` compilado en el

@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/portal/page-header';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Checkbox, Field, Input, LabelledInput, Textarea } from '@/components/ui/field';
 import { Alert, EmptyState, ErrorState, Loading } from '@/components/ui/feedback';
@@ -86,13 +87,10 @@ export default function AlmacenPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-xl font-bold text-neutral-900">Almacén</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          El vademécum del que sale cada receta. Las dosis sugeridas cuelgan de la indicación, no
-          del fármaco: un mismo medicamento no se pauta igual según para qué se recete.
-        </p>
-      </header>
+      <PageHeader
+        title="Almacén"
+        description="El vademécum del que sale cada receta. Las dosis sugeridas cuelgan de la indicación, no del fármaco: un mismo medicamento no se pauta igual según para qué se recete."
+      />
 
       {/*
         * Lista a la izquierda, ficha a la derecha.

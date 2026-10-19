@@ -39,7 +39,7 @@ describe('portales', () => {
     expect(portalFromPathname('/admin/usuarios')?.slug).toBe('admin');
     expect(portalFromPathname('/tecnico')?.slug).toBe('tecnico');
     expect(portalFromPathname('/login')).toBeNull();
-    expect(portalFromPathname('/app/captura')).toBeNull();
+    expect(portalFromPathname('/captura/abc123')).toBeNull();
     expect(portalFromPathname('/')).toBeNull();
   });
 

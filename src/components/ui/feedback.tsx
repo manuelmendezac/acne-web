@@ -90,28 +90,27 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 }
 
 /**
- * Panel shown when `StudyModeGuard` rejects an AI route.
+ * Panel shown when `StudyModeGuard` rejects an assisted-evaluation route.
  *
- * Presented as expected behaviour of the experimental design, not as a failure: in pretest the
- * physician is SUPPOSED to be unable to see the model's suggestion (RF-TR-01).
+ * Presented as expected behaviour of the study, not as a failure: in the pretest phase the
+ * physician is SUPPOSED to diagnose without the system's suggestion (RF-TR-01). The wording stays
+ * clinical — it names the phase and the restriction, not the technology behind it.
  */
 export function StudyModeBlocked({ children }: { children?: ReactNode }) {
   return (
-    <div className="flex gap-3 rounded-md border border-neutral-300 bg-neutral-100 px-4 py-4 text-sm">
+    <div className="flex gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-sm">
       <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-neutral-500" aria-hidden />
       <div className="space-y-1.5">
         <p className="font-semibold text-neutral-900">
-          Módulo de IA bloqueado — modo pretest (IIA = 0)
+          Evaluación asistida no disponible en esta fase
         </p>
         <p className="text-neutral-500">
-          En la observación O₁ del diseño preexperimental el diagnóstico debe emitirse sin
-          asistencia de la inteligencia artificial. El bloqueo se aplica en el servidor, no solo en
-          esta pantalla, para que ninguna llamada rezagada pueda contaminar la medición.
+          En la fase actual del estudio el diagnóstico se registra sin la evaluación asistida del
+          sistema. La restricción se aplica en el servidor, no solo en esta pantalla, para que
+          ninguna lectura pueda influir en la medición.
         </p>
         {children}
-        <p className="text-xs text-neutral-500">
-          Requerimiento RF-TR-01 · La IA se habilita al aplicar la intervención X y pasar a postest.
-        </p>
+        <p className="text-xs text-neutral-500">Fase pretest · RF-TR-01</p>
       </div>
     </div>
   );

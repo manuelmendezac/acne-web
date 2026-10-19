@@ -4,6 +4,7 @@ import { ChevronRight, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { PageHeader } from '@/components/portal/page-header';
 import { useSession } from '@/components/session-provider';
 import { Badge, StudyModeBadge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button-variants';
@@ -48,18 +49,22 @@ export default function CasosPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">Bandeja de casos</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Cada caso se mide dos veces: una sin IA (O₁) y otra con IA (O₂). Es su propio control.
-          </p>
-        </div>
-        <Link href={href('/casos/nuevo')} className={buttonVariants({ variant: 'primary' })}>
-          <Plus className="h-4 w-4" aria-hidden />
-          Nuevo caso
-        </Link>
-      </header>
+      <PageHeader
+        title="Bandeja de casos"
+        // The experimental framing only means something to whoever reads the evidence; the
+        // consulting room and the desk get told what the tray is.
+        description={
+          user?.role === 'admin'
+            ? 'Cada caso se mide dos veces: una sin la intervención (O₁) y otra con ella (O₂). Es su propio control.'
+            : 'Casos abiertos y en seguimiento, del más reciente al más antiguo.'
+        }
+        actions={
+          <Link href={href('/casos/nuevo')} className={buttonVariants({ variant: 'primary' })}>
+            <Plus className="h-4 w-4" aria-hidden />
+            Nuevo caso
+          </Link>
+        }
+      />
 
       <Card>
         <CardHeader title="Filtros" />
@@ -166,7 +171,7 @@ export default function CasosPage() {
                           <span className="block text-sm text-neutral-900">
                             {item.patientName}
                           </span>
-                          <span className="block font-mono text-[11px] text-neutral-500">
+                          <span className="block font-mono text-xs text-neutral-500">
                             {item.patientCode}
                           </span>
                         </>

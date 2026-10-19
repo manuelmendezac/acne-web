@@ -1,9 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" role="img" aria-label="Diagnóstico asistido de acné">
-  <rect width="192" height="192" rx="34" fill="#581c87"/>
-  <circle cx="96" cy="86" r="42" fill="none" stroke="#c4b5fd" stroke-width="7"/>
-  <circle cx="80" cy="76" r="6" fill="#c4b5fd"/>
-  <circle cx="110" cy="92" r="5" fill="#c4b5fd"/>
-  <circle cx="92" cy="104" r="4" fill="#c4b5fd"/>
-  <path d="M62 140h68" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
-  <path d="M74 156h44" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#581c87"/>
+  <circle cx="60" cy="60" r="13" fill="#ffffff"/>
+  <circle cx="96" cy="60" r="10" fill="#d8b4fe" opacity="0.55"/>
+  <circle cx="132" cy="60" r="10" fill="#d8b4fe" opacity="0.55"/>
+  <circle cx="60" cy="96" r="10" fill="#d8b4fe" opacity="0.55"/>
+  <circle cx="96" cy="96" r="13" fill="#ffffff"/>
+  <circle cx="132" cy="96" r="10" fill="#d8b4fe" opacity="0.55"/>
+  <circle cx="60" cy="132" r="10" fill="#d8b4fe" opacity="0.55"/>
+  <circle cx="96" cy="132" r="10" fill="#d8b4fe" opacity="0.55"/>
+  <circle cx="132" cy="132" r="13" fill="#ffffff"/>
 </svg>

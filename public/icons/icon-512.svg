@@ -1,9 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Diagnóstico asistido de acné">
-  <rect width="512" height="512" rx="92" fill="#581c87"/>
-  <circle cx="256" cy="230" r="112" fill="none" stroke="#c4b5fd" stroke-width="18"/>
-  <circle cx="214" cy="204" r="16" fill="#c4b5fd"/>
-  <circle cx="294" cy="246" r="13" fill="#c4b5fd"/>
-  <circle cx="246" cy="278" r="11" fill="#c4b5fd"/>
-  <path d="M166 374h180" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
-  <path d="M198 416h116" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity="0.6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Maskable: the tile bleeds to the edge; the grid stays inside the 80 % safe zone. -->
+  <rect width="512" height="512" fill="#581c87"/>
+  <g transform="translate(64 64) scale(2)">
+    <circle cx="60" cy="60" r="13" fill="#ffffff"/>
+    <circle cx="96" cy="60" r="10" fill="#d8b4fe" opacity="0.55"/>
+    <circle cx="132" cy="60" r="10" fill="#d8b4fe" opacity="0.55"/>
+    <circle cx="60" cy="96" r="10" fill="#d8b4fe" opacity="0.55"/>
+    <circle cx="96" cy="96" r="13" fill="#ffffff"/>
+    <circle cx="132" cy="96" r="10" fill="#d8b4fe" opacity="0.55"/>
+    <circle cx="60" cy="132" r="10" fill="#d8b4fe" opacity="0.55"/>
+    <circle cx="96" cy="132" r="10" fill="#d8b4fe" opacity="0.55"/>
+    <circle cx="132" cy="132" r="13" fill="#ffffff"/>
+  </g>
 </svg>

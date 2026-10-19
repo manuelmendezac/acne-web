@@ -60,7 +60,7 @@ export function IndicatorCard({ data }: { data: IndicatorComparison }) {
           </div>
           <div>
             <p className="text-xs text-neutral-500">Postest</p>
-            <p className="text-2xl font-bold tabular-nums text-violet-700">
+            <p className="text-2xl font-bold tabular-nums text-purple-900">
               {data.postest === null ? '—' : num(data.postest.value)}
             </p>
           </div>

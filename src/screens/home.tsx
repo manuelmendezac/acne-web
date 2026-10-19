@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { useSession } from '@/components/session-provider';
 import { IndicatorCard } from '@/components/portal/indicator-card';
+import { PageHeader } from '@/components/portal/page-header';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
@@ -50,8 +51,8 @@ const INTAKE_STEPS = [
   },
   {
     path: '/casos',
-    label: 'Entregar el QR de las fotografías',
-    hint: 'Desde la ficha del caso, para capturar desde el teléfono.',
+    label: 'Tomar las fotografías con el teléfono',
+    hint: 'Desde la ficha del caso, escaneando el código QR.',
   },
 ] as const;
 
@@ -121,20 +122,16 @@ export default function PortalHomePage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">
-            Hola, {user?.fullName ?? ''}
-          </h1>
-          {/* El encuadre del experimento solo le dice algo a quien participa de él. Al mostrador
-              se le dice en qué consiste su puesto, que es lo que esta pantalla debe contestarle. */}
-          <p className="mt-1 text-sm text-neutral-500">
-            {showsIndicators
-              ? 'Diseño preexperimental pretest–postest de un solo grupo · G: O₁ → X → O₂ · censo de 30 casos.'
-              : portal.purpose}
-          </p>
-        </div>
-      </header>
+      {/* El encuadre del experimento solo le dice algo a quien participa de él. Al mostrador se le
+          dice en qué consiste su puesto, que es lo que esta pantalla debe contestarle. */}
+      <PageHeader
+        title={`Hola, ${user?.fullName ?? ''}`}
+        description={
+          showsIndicators
+            ? 'Diseño preexperimental pretest–postest de un solo grupo · G: O₁ → X → O₂ · censo de 30 casos.'
+            : portal.purpose
+        }
+      />
 
       {showsSurvey && survey.data?.due === true ? (
         <Alert tone="info" title="Le corresponde responder el cuestionario de satisfacción">

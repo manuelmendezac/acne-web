@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useSession } from '@/components/session-provider';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button-variants';
+import { PageHeader } from '@/components/portal/page-header';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/field';
 import { EmptyState, ErrorState, Loading } from '@/components/ui/feedback';
@@ -55,31 +56,27 @@ export default function PacientesPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">
-            Pacientes
-          </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Registro clínico con el seguimiento de cada persona a lo largo de sus visitas.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {/* Registering a person and opening a visit are two different acts; the registry screen
-              leads with the first. */}
-          <Link
-            href={href('/pacientes/nuevo')}
-            className={buttonVariants({ variant: 'primary' })}
-          >
-            <UserPlus className="h-4 w-4" aria-hidden />
-            Nuevo paciente
-          </Link>
-          <Link href={href('/casos/nuevo')} className={buttonVariants({ variant: 'outline' })}>
-            <Plus className="h-4 w-4" aria-hidden />
-            Nuevo caso
-          </Link>
-        </div>
-      </header>
+      <PageHeader
+        title="Pacientes"
+        description="Registro clínico con el seguimiento de cada persona a lo largo de sus visitas."
+        actions={
+          <>
+            {/* Registering a person and opening a visit are two different acts; the registry
+                screen leads with the first. */}
+            <Link
+              href={href('/pacientes/nuevo')}
+              className={buttonVariants({ variant: 'primary' })}
+            >
+              <UserPlus className="h-4 w-4" aria-hidden />
+              Nuevo paciente
+            </Link>
+            <Link href={href('/casos/nuevo')} className={buttonVariants({ variant: 'outline' })}>
+              <Plus className="h-4 w-4" aria-hidden />
+              Nuevo caso
+            </Link>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader
@@ -161,7 +158,7 @@ export default function PacientesPage() {
                           <span className="block text-sm font-medium text-neutral-900">
                             {patient.fullName}
                           </span>
-                          <span className="block font-mono text-[11px] text-neutral-500">
+                          <span className="block font-mono text-xs text-neutral-500">
                             {patient.patientCode}
                           </span>
                         </>

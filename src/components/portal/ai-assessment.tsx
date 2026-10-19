@@ -21,7 +21,7 @@ type Assessment = components['schemas']['AiAssessmentDto'];
  */
 export function AiAssessment({
   assessment,
-  title = 'Lectura del modelo',
+  title = 'Lectura asistida',
 }: {
   assessment: Assessment;
   title?: string;

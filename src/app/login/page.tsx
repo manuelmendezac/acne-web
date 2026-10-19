@@ -3,22 +3,22 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
-import { BrandMark } from '@/components/brand/brand-mark';
-import { ClinicIllustration } from '@/components/brand/clinic-illustration';
+import { Wordmark } from '@/components/brand/wordmark';
 import { useSession } from '@/components/session-provider';
 import { Button } from '@/components/ui/button';
 import { LabelledInput, PasswordInput } from '@/components/ui/field';
 import { Alert } from '@/components/ui/feedback';
 import { login } from '@/lib/api';
-import { THESIS_INSTITUTION, THESIS_SCHOOL, THESIS_TITLE } from '@/lib/constants';
+import { PRODUCT_TAGLINE, THESIS_INSTITUTION, THESIS_SCHOOL } from '@/lib/constants';
 import { portalForRole, portalHref } from '@/lib/portals';
 import { useAction } from '@/lib/use-api';
 
 /**
- * Sign-in, split in half: the form on the left, the illustrated panel on the right.
+ * Sign-in: the product's front door.
  *
- * The panel is `hidden lg:block`. Below that breakpoint the form takes the full width, which is what
- * matters on the phone a technician actually signs in from at the reception desk.
+ * A dark brand panel on the left and the form on the right. The panel is `hidden lg:block`; below
+ * that breakpoint the form takes the full width, which is what matters on the phone a technician
+ * signs in from at the reception desk.
  */
 export default function LoginPage() {
   const router = useRouter();
@@ -33,37 +33,48 @@ export default function LoginPage() {
     const session = await run(email.trim(), password);
     if (session !== null) {
       setSession(session);
-      // Each role has exactly one portal, so there is nothing to choose: sending everyone to a
-      // shared landing page and letting it bounce them would put a redirect between the login and
-      // the first screen of every session, for no decision anyone has to make.
+      // Each role has exactly one portal, so there is nothing to choose here.
       const portal = portalForRole(session.user.role);
-      router.push(portal === null ? '/' : portalHref(portal.slug));
+      router.push(portal === null ? '/login' : portalHref(portal.slug));
     }
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-screen lg:grid-cols-[5fr_7fr]">
+      {/* --- Brand panel ---------------------------------------------------- */}
+      <aside className="relative hidden overflow-hidden bg-neutral-950 lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <DotField />
+        <div className="relative">
+          <Wordmark size="lg" tone="dark" />
+        </div>
+        <div className="relative max-w-md">
+          <p className="text-2xl font-semibold leading-snug text-white">{PRODUCT_TAGLINE}</p>
+          <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+            Registro del paciente, fotografías del protocolo, evaluación asistida y diagnóstico del
+            especialista en un solo flujo de consulta.
+          </p>
+        </div>
+        <p className="relative text-xs text-neutral-500">
+          Desarrollado en la {THESIS_INSTITUTION} · {THESIS_SCHOOL}
+        </p>
+      </aside>
+
       {/* --- Form ---------------------------------------------------------- */}
       <div className="flex flex-col px-6 py-8 sm:px-10">
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <BrandMark className="h-9 w-9" />
-            <span className="text-sm font-bold text-neutral-900">
-              Acné UNT
-            </span>
-          </div>
+        <header className="lg:hidden">
+          <Wordmark size="md" />
         </header>
 
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-sm">
-            <h1 className="text-2xl font-bold text-neutral-900">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
               Iniciar sesión
             </h1>
             <p className="mt-2 text-sm text-neutral-500">
-              Acceso para el personal del estudio.
+              Ingrese con la cuenta que le asignó el centro.
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-7 space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
               <LabelledInput
                 label="Correo electrónico"
                 type="email"
@@ -71,7 +82,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="dermatologo@centro.pe"
+                placeholder="nombre@centro.pe"
               />
               <PasswordInput
                 label="Contraseña"
@@ -87,39 +98,38 @@ export default function LoginPage() {
                 </Alert>
               ) : null}
 
-              <Button type="submit" block loading={pending}>
+              <Button type="submit" block size="lg" loading={pending}>
                 Entrar
               </Button>
             </form>
 
-            {/* The institutional line lives here too, because on a phone the panel is not rendered
-                and this would otherwise be a login form belonging to nothing in particular. */}
-            <p className="mt-8 text-xs text-neutral-500 lg:hidden">
-              {THESIS_INSTITUTION} · {THESIS_SCHOOL}
+            <p className="mt-10 text-xs text-neutral-500 lg:hidden">
+              Desarrollado en la {THESIS_INSTITUTION} · {THESIS_SCHOOL}
             </p>
           </div>
         </div>
       </div>
-
-      {/* --- Illustrated panel ---------------------------------------------- */}
-      <aside className="relative hidden overflow-hidden lg:block">
-        <ClinicIllustration className="absolute inset-0" />
-
-        {/* Scrim: the caption sits over the drawing, and the drawing is busiest where the text is. */}
-        <div className="absolute inset-0 bg-linear-to-t from-neutral-950/85 via-neutral-950/25 to-transparent" />
-
-        <div className="absolute inset-x-0 bottom-0 p-10">
-          <p className="text-xs font-medium uppercase tracking-wider text-violet-300">
-            Prototipo funcional de tesis
-          </p>
-          <p className="mt-3 text-xl font-semibold leading-snug text-white">
-            {THESIS_TITLE}
-          </p>
-          <p className="mt-4 text-sm text-neutral-300">
-            {THESIS_INSTITUTION} · {THESIS_SCHOOL}
-          </p>
-        </div>
-      </aside>
     </div>
+  );
+}
+
+/** A quiet field of dots behind the brand panel: the mark's grid, extended. */
+function DotField() {
+  return (
+    <svg className="absolute inset-0 h-full w-full text-purple-900" aria-hidden>
+      <defs>
+        <pattern id="dermatrix-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1.6" fill="currentColor" />
+        </pattern>
+        <radialGradient id="dermatrix-fade" cx="20%" cy="30%" r="80%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id="dermatrix-mask">
+          <rect width="100%" height="100%" fill="url(#dermatrix-fade)" />
+        </mask>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#dermatrix-dots)" mask="url(#dermatrix-mask)" />
+    </svg>
   );
 }

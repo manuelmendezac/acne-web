@@ -148,7 +148,7 @@ export function BoxPlot({
               y={toY(tick)}
               textAnchor="end"
               dominantBaseline="middle"
-              className="fill-neutral-500 text-[10px] tabular-nums"
+              className="fill-neutral-500 text-xs tabular-nums"
             >
               {num(tick, 1)}
             </text>
@@ -165,7 +165,7 @@ export function BoxPlot({
                 x={centre}
                 y={padding.top + plotHeight / 2}
                 textAnchor="middle"
-                className="fill-neutral-500 text-[11px]"
+                className="fill-neutral-500 text-xs"
               >
                 sin datos
               </text>
@@ -252,7 +252,7 @@ export function BoxPlot({
                 x={centre}
                 y={height - padding.bottom + 18}
                 textAnchor="middle"
-                className="fill-neutral-900 text-[11px] font-medium"
+                className="fill-neutral-900 text-xs font-medium"
               >
                 {entry.label}
               </text>
@@ -260,7 +260,7 @@ export function BoxPlot({
                 x={centre}
                 y={height - padding.bottom + 32}
                 textAnchor="middle"
-                className="fill-neutral-500 text-[10px] tabular-nums"
+                className="fill-neutral-500 text-xs tabular-nums"
               >
                 n = {stats.n} · med. {num(stats.median, 2)}
               </text>
@@ -273,7 +273,7 @@ export function BoxPlot({
             x={padding.left - 8}
             y={padding.top - 4}
             textAnchor="end"
-            className="fill-neutral-500 text-[10px]"
+            className="fill-neutral-500 text-xs"
           >
             {unit}
           </text>

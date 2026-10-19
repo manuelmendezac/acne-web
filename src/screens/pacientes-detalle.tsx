@@ -3,7 +3,6 @@
 import {
   ArrowLeft,
   ArrowRight,
-  Brain,
   CalendarDays,
   Minus,
   Pencil,
@@ -120,7 +119,7 @@ export default function PacienteHistoriaPage() {
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Volver al registro de pacientes
         </Link>
-        <h1 className="mt-1 text-xl font-bold text-neutral-900">
+        <h1 className="mt-1 text-xl font-semibold tracking-tight text-neutral-900">
           {patient.fullName ?? patient.patientCode}
         </h1>
         <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-neutral-500">
@@ -262,7 +261,7 @@ function SummaryCard({
         </p>
         <p
           className={cn(
-            'text-xl font-bold text-neutral-900',
+            'text-xl font-semibold tracking-tight text-neutral-900',
             valueClassName,
           )}
         >
@@ -322,7 +321,7 @@ function VisitRow({
           <span className="block text-sm font-medium text-neutral-900">
             {date(entry.createdAt)}
           </span>
-          <span className="block font-mono text-[11px] text-neutral-500">
+          <span className="block font-mono text-xs text-neutral-500">
             {entry.caseCode}
           </span>
         </span>
@@ -443,9 +442,8 @@ function VisitRow({
             </section>
 
             <section>
-              <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                <Brain className="h-3.5 w-3.5" aria-hidden />
-                Sugerencia de la IA
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Evaluación asistida
               </h3>
               <div className="mt-2">
                 {/* `inference: null` has two very different meanings, and conflating them would
@@ -454,7 +452,7 @@ function VisitRow({
                 {entry.inference === null ? (
                   aiVisible ? (
                     <p className="text-neutral-500">
-                      Esta visita no tiene ninguna inferencia registrada.
+                      Esta visita no tiene ningún análisis registrado.
                     </p>
                   ) : (
                     <StudyModeBlocked />
@@ -462,7 +460,7 @@ function VisitRow({
                 ) : (
                   <div className="space-y-2 rounded-md border border-neutral-200 px-3 py-2">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="font-medium text-violet-700">
+                      <span className="font-medium text-purple-900">
                         {igaLabel(catalogs, entry.inference.igaClass)}
                       </span>
                       <span className="text-xs text-neutral-500">
@@ -471,7 +469,7 @@ function VisitRow({
                           ? '—'
                           : pct(entry.inference.confidence * 100)}
                       </span>
-                      <span className="ml-auto font-mono text-[11px] text-neutral-500">
+                      <span className="ml-auto font-mono text-xs text-neutral-500">
                         {entry.inference.modelVersion}
                       </span>
                     </div>
@@ -487,8 +485,8 @@ function VisitRow({
 
                     {entry.inference.modelBackend === 'stub' ? (
                       <p className="text-xs text-amber-600">
-                        Backend de demostración: la sugerencia no proviene de una CNN entrenada y no
-                        puede citarse como resultado de la tesis.
+                        Modo de demostración: la sugerencia no proviene del clasificador entrenado y
+                        no puede citarse como resultado.
                       </p>
                     ) : null}
                   </div>

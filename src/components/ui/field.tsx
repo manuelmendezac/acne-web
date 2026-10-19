@@ -16,9 +16,9 @@ import {
 import { cn } from '@/lib/cn';
 
 const CONTROL_CLASSES =
-  'w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900' +
-  'placeholder:text-neutral-500 focus:border-purple-900 focus:outline-none focus:ring-2' +
-  'focus:ring-purple-900/25 disabled:cursor-not-allowed disabled:opacity-60';
+  'w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 ' +
+  'placeholder:text-neutral-400 focus:border-purple-900 focus:outline-none focus:ring-2 ' +
+  'focus:ring-purple-900/20 disabled:cursor-not-allowed disabled:opacity-60';
 
 /**
  * Wiring a `Field` passes to the control it wraps.
@@ -232,7 +232,7 @@ export function PasswordInput({
 // the Likert scale ended up looking subtly different from one another.
 
 const CHECK_CLASSES =
-  'h-4 w-4 shrink-0 rounded border-neutral-300 text-purple-900' +
+  'h-4 w-4 shrink-0 rounded border-neutral-300 text-purple-900 ' +
   'focus:ring-purple-900 disabled:cursor-not-allowed disabled:opacity-60';
 
 export const Checkbox = forwardRef<HTMLInputElement, Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { label: ReactNode }>(

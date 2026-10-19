@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { SessionProvider } from '@/components/session-provider';
 import { ToastProvider } from '@/components/ui/toast';
+import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/lib/constants';
 
 import './globals.css';
 
@@ -26,13 +27,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Diagnóstico asistido de acné · UNT 2026',
-    template: '%s · Diagnóstico asistido de acné',
+    default: PRODUCT_NAME,
+    template: `%s · ${PRODUCT_NAME}`,
   },
-  description:
-    'Prototipo de diagnóstico asistido de acné con inteligencia artificial. Herramienta de apoyo ' +
-    'con fines de investigación académica; no sustituye el juicio clínico del profesional médico.',
-  applicationName: 'Diagnóstico asistido de acné',
+  description: `${PRODUCT_TAGLINE} de acné. Herramienta de apoyo; no sustituye el juicio clínico del profesional médico.`,
+  applicationName: PRODUCT_NAME,
   manifest: '/manifest.json',
   // The portal handles patient data: it must never be indexed.
   robots: { index: false, follow: false },

@@ -101,7 +101,7 @@ export default function CapturaMovilPage() {
     return (
       <Alert tone="danger" title="Este enlace ya no sirve">
         <p>{error ?? 'El código caducó o fue anulado.'}</p>
-        <p className="mt-2">Pida al centro un código QR nuevo.</p>
+        <p className="mt-2">Genere un código QR nuevo desde la ficha del caso.</p>
       </Alert>
     );
   }
@@ -185,8 +185,8 @@ export default function CapturaMovilPage() {
 
       <p className="flex items-start gap-2 text-xs text-neutral-500">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-        Sus fotografías se cifran al guardarse y solo las ve el profesional que atiende su caso. El
-        envío queda registrado. Puede retirar su consentimiento en cualquier momento.
+        Las fotografías se cifran al guardarse y solo las ve el profesional que atiende el caso. Cada
+        envío queda registrado en la auditoría.
       </p>
     </div>
   );

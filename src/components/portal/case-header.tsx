@@ -106,19 +106,19 @@ export function CaseStats({
       icon: <Stethoscope className="h-4 w-4" aria-hidden />,
       label: 'Severidad',
       value: severityLabel ?? 'Sin diagnóstico',
-      tone: 'bg-violet-50 text-violet-700',
+      tone: 'bg-neutral-100 text-neutral-600',
     },
     {
       icon: <Pill className="h-4 w-4" aria-hidden />,
       label: 'Recetas',
       value: String(prescriptions),
-      tone: 'bg-emerald-50 text-emerald-700',
+      tone: 'bg-neutral-100 text-neutral-600',
     },
     {
       icon: <ImageIcon className="h-4 w-4" aria-hidden />,
       label: 'Imágenes',
       value: String(images),
-      tone: 'bg-neutral-100 text-neutral-500',
+      tone: 'bg-neutral-100 text-neutral-600',
     },
   ];
 
@@ -127,7 +127,7 @@ export function CaseStats({
       {tiles.map((tile) => (
         <div
           key={tile.label}
-          className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-3"
+          className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3"
         >
           <span
             className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', tile.tone)}
@@ -135,10 +135,10 @@ export function CaseStats({
             {tile.icon}
           </span>
           <span className="min-w-0">
-            <span className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-              {tile.label}
+            <span className="block text-xs font-medium text-neutral-500">{tile.label}</span>
+            <span className="block truncate text-sm font-semibold text-neutral-900">
+              {tile.value}
             </span>
-            <span className="block truncate text-sm font-bold text-neutral-900">{tile.value}</span>
           </span>
         </div>
       ))}
@@ -204,7 +204,7 @@ export function VisitTimeline({
                 <span className="flex flex-wrap items-center gap-2">
                   <CalendarClock className="h-3.5 w-3.5 shrink-0 text-neutral-400" aria-hidden />
                   <span className="text-xs text-neutral-500">{formatDate(visit.createdAt)}</span>
-                  <span className="font-mono text-[11px] text-neutral-500">{visit.caseCode}</span>
+                  <span className="font-mono text-xs text-neutral-500">{visit.caseCode}</span>
                   {current ? <Badge variant="primary">esta visita</Badge> : null}
                 </span>
                 <span className="mt-1 flex flex-wrap items-center gap-2">

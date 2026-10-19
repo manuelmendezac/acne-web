@@ -153,7 +153,7 @@ export default function NuevoCasoPage() {
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Volver a la bandeja
         </Link>
-        <h1 className="mt-1 text-xl font-bold text-neutral-900">
+        <h1 className="mt-1 text-xl font-semibold tracking-tight text-neutral-900">
           Nuevo caso
         </h1>
         <p className="mt-1 text-sm text-neutral-500">
@@ -319,7 +319,7 @@ export default function NuevoCasoPage() {
               Anamnesis
             </span>
           }
-          description="Se muestra igual en pretest y en postest: si apareciera solo con la IA, el contraste mediría «anamnesis + IA» en lugar de la intervención sola."
+          description="Las 21 preguntas del cuestionario de ingreso. Se registran igual en todas las fases del estudio."
           action={
             created && anamnesisSaved ? (
               <Badge variant="success">
@@ -454,7 +454,7 @@ export default function NuevoCasoPage() {
             ) : missingShots.length > 0 ? (
               <Alert tone="warning" title="Faltan tomas obligatorias">
                 {listShotLabels(missingShots)}. El especialista podrá abrir el caso, pero no
-                analizarlo con IA ni registrar el diagnóstico hasta completarlas.
+                analizarlo ni registrar el diagnóstico hasta completarlas.
               </Alert>
             ) : null}
 

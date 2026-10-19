@@ -85,7 +85,7 @@ export function CaseAnalysisMatrix({
         <span className={agrees ? 'text-neutral-900' : 'text-amber-700'}>
           {igaLabel(catalogs, igaClass)}
         </span>
-        <span className="block text-[11px] tabular-nums text-neutral-500">
+        <span className="block text-xs tabular-nums text-neutral-500">
           {confidence === null ? '—' : pct(confidence * 100)}
         </span>
       </>
@@ -96,7 +96,7 @@ export function CaseAnalysisMatrix({
       ) : (
         <button
           type="button"
-          title="Ver el Grad-CAM de este modelo sobre esta toma"
+          title="Ver el mapa de atención de este clasificador sobre esta toma"
           onClick={() => onSelectHeatmap(view, heatmapImageId)}
           className={
             active
@@ -112,7 +112,7 @@ export function CaseAnalysisMatrix({
       <span className={chosen ? 'block rounded-md bg-emerald-50 ring-2 ring-emerald-600' : 'block'}>
         {reading}
         {chosen ? (
-          <span className="block px-1 text-[10px] font-semibold uppercase text-emerald-700">
+          <span className="block px-1 text-xs font-semibold uppercase text-emerald-700">
             elegida
           </span>
         ) : (
@@ -121,7 +121,7 @@ export function CaseAnalysisMatrix({
             disabled={choosing}
             title="Usar esta lectura como sugerencia del caso"
             onClick={() => onChoose(view, memberTag)}
-            className="block px-1 text-[11px] font-normal text-emerald-700 underline-offset-2 hover:underline disabled:opacity-50"
+            className="block px-1 text-xs font-normal text-emerald-700 underline-offset-2 hover:underline disabled:opacity-50"
           >
             usar
           </button>
@@ -134,7 +134,7 @@ export function CaseAnalysisMatrix({
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-semibold text-neutral-900">
-          Análisis por toma y por modelo
+          Análisis por toma y por clasificador
         </p>
         <span className="flex items-center gap-2 text-xs text-neutral-500">
           {analysis.pending > 0 ? <span>{analysis.pending} toma(s) en proceso</span> : null}
@@ -154,7 +154,7 @@ export function CaseAnalysisMatrix({
                   {tag}
                 </th>
               ))}
-              <th className="py-1 pr-3 font-medium">Ensemble</th>
+              <th className="py-1 pr-3 font-medium">Combinado</th>
             </tr>
           </thead>
           <tbody>
@@ -166,14 +166,14 @@ export function CaseAnalysisMatrix({
                   key={view.imageId}
                   className={
                     decisive
-                      ? 'border-t border-neutral-200 bg-violet-50/60 align-top'
+                      ? 'border-t border-neutral-200 bg-purple-50/60 align-top'
                       : 'border-t border-neutral-200 align-top'
                   }
                 >
                   <td className="py-1.5 pr-3 font-medium text-neutral-900">
                     {shotLabelOf(catalogs, view.shotKey)}
                     {decisive ? (
-                      <span className="ml-1 text-[10px] font-semibold uppercase text-violet-700">
+                      <span className="ml-1 text-xs font-semibold uppercase text-purple-900">
                         decide
                       </span>
                     ) : null}
@@ -182,7 +182,7 @@ export function CaseAnalysisMatrix({
                     <td colSpan={memberTags.length + 1} className="py-1.5 pr-3 text-amber-700">
                       Otra condición según el filtro: no se graduó
                       {view.inference.acneProbability !== null ? (
-                        <span className="block text-[11px] tabular-nums text-neutral-500">
+                        <span className="block text-xs tabular-nums text-neutral-500">
                           Probabilidad de acné {pct(view.inference.acneProbability * 100)}
                         </span>
                       ) : null}
@@ -230,7 +230,7 @@ export function CaseAnalysisMatrix({
                               current === view.imageId ? null : view.imageId,
                             )
                           }
-                          className="mt-1 block text-[11px] font-normal text-violet-700 underline-offset-2 hover:underline"
+                          className="mt-1 block text-xs font-normal text-purple-900 underline-offset-2 hover:underline"
                         >
                           {expanded === view.imageId ? 'ocultar cálculo' : 'ver cálculo'}
                         </button>
@@ -265,7 +265,7 @@ export function CaseAnalysisMatrix({
                       type="button"
                       disabled={choosing}
                       onClick={onClearChoice}
-                      className="mt-1 block text-violet-700 underline-offset-2 hover:underline disabled:opacity-50"
+                      className="mt-1 block text-purple-900 underline-offset-2 hover:underline disabled:opacity-50"
                     >
                       Volver a la regla automática
                     </button>
@@ -277,9 +277,9 @@ export function CaseAnalysisMatrix({
                     </span>
                   ) : null}
                 </td>
-                <td className="py-1.5 pr-3 font-bold text-violet-700">
+                <td className="py-1.5 pr-3 font-bold text-purple-900">
                   {igaLabel(catalogs, recommended)}
-                  <span className="block text-[11px] font-normal tabular-nums text-neutral-500">
+                  <span className="block text-xs font-normal tabular-nums text-neutral-500">
                     {analysis.confidence === null ? '—' : pct(analysis.confidence * 100)}
                   </span>
                 </td>
@@ -289,11 +289,12 @@ export function CaseAnalysisMatrix({
         </table>
       </div>
       <p className="text-xs text-neutral-500">
-        Cada celda es la lectura de un modelo sobre una toma; la columna Ensemble repite la del
-        modelo que estuvo más seguro en esa toma (no se promedia nada). La fila «Caso» sigue la
-        regla «mayoría de tomas; si todas difieren, la toma más segura», y las tomas marcadas
-        «decide» son las que la produjeron. Una celda en ámbar difiere de la clase sugerida.
-        {onSelectHeatmap !== undefined ? ' Pulse una celda para ver su Grad-CAM.' : ''}
+        Cada celda es la lectura de un clasificador sobre una toma; la columna Combinado repite la
+        del clasificador que estuvo más seguro en esa toma (no se promedia nada). La fila «Caso»
+        sigue la regla «mayoría de tomas; si todas difieren, la toma más segura», y las tomas
+        marcadas «decide» son las que la produjeron. Una celda en ámbar difiere de la clase
+        sugerida.
+        {onSelectHeatmap !== undefined ? ' Pulse una celda para ver su mapa de atención.' : ''}
         {onChoose !== undefined
           ? ' «Usar» fija esa lectura como sugerencia del caso en lugar de la regla; queda registrado quién la eligió.'
           : ''}
@@ -343,7 +344,7 @@ function VectorBreakdown({ view, catalogs }: { view: View; catalogs: Catalogs | 
       <table className="w-full">
         <thead>
           <tr className="text-left text-neutral-500">
-            <th className="py-0.5 pr-2 font-medium">Modelo</th>
+            <th className="py-0.5 pr-2 font-medium">Clasificador</th>
             {classes.map((c) => (
               <th key={c} className="py-0.5 pr-2 text-right font-medium">
                 {igaLabel(catalogs, c)}
@@ -358,14 +359,14 @@ function VectorBreakdown({ view, catalogs }: { view: View; catalogs: Catalogs | 
               key={m.tag}
               className={
                 m === surest
-                  ? 'border-t border-neutral-200 bg-violet-50/60'
+                  ? 'border-t border-neutral-200 bg-purple-50/60'
                   : 'border-t border-neutral-200'
               }
             >
               <td className="py-0.5 pr-2 text-neutral-900">
                 {m.tag}
                 {m === surest ? (
-                  <span className="ml-1 text-[10px] font-semibold uppercase text-violet-700">
+                  <span className="ml-1 text-xs font-semibold uppercase text-purple-900">
                     gana
                   </span>
                 ) : null}
@@ -388,8 +389,9 @@ function VectorBreakdown({ view, catalogs }: { view: View; catalogs: Catalogs | 
         </tbody>
       </table>
       <p className="text-neutral-600">
-        Cada modelo reparte el 100 % entre las cinco clases; el Ensemble toma tal cual la lectura del
-        modelo más seguro en esta toma (a igual confianza, el de mayor F1). {explanation}
+        Cada clasificador reparte el 100 % entre las cinco clases; la lectura combinada toma tal
+        cual la del clasificador más seguro en esta toma (a igual confianza, el de mayor F1).{' '}
+        {explanation}
       </p>
     </div>
   );

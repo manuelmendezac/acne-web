@@ -51,7 +51,7 @@ export default function PerfilPage() {
       <header className="flex flex-wrap items-center gap-4">
         <Avatar name={user.fullName} size="lg" />
         <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold text-neutral-900">
+          <h1 className="truncate text-xl font-semibold tracking-tight text-neutral-900">
             {user.fullName}
           </h1>
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-neutral-500">
@@ -86,7 +86,7 @@ export default function PerfilPage() {
           <p>
             El sistema <strong className="text-neutral-900">es</strong> la intervención X, de modo
             que cada revisión, diagnóstico y jornada que registra aquí cuenta como postest
-            (IIA&nbsp;=&nbsp;1) y la sugerencia del modelo está siempre disponible.
+            (IIA&nbsp;=&nbsp;1) y la evaluación asistida está siempre disponible.
           </p>
           <p>
             La observación O₁ es la evaluación <strong className="text-neutral-900">manual</strong>{' '}

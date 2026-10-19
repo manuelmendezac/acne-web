@@ -120,8 +120,8 @@ export function DiagnosisForm({
                   >
                     <span>{catalogs?.iga.labels[value] ?? value}</span>
                     {isAiSuggestion ? (
-                      <span className="ml-2 rounded-full bg-violet-700/15 px-2 py-0.5 text-[10px] font-medium text-violet-700">
-                        sugerida por IA
+                      <span className="ml-2 rounded-full bg-purple-900/10 px-2 py-0.5 text-xs font-medium text-purple-900">
+                        sugerencia del sistema
                       </span>
                     ) : null}
                   </button>
@@ -212,7 +212,7 @@ export function DiagnosisForm({
           ) : null}
 
           {hasMismatch ? (
-            <Alert tone="danger" title="La sugerencia de la IA y la anamnesis se contradicen">
+            <Alert tone="danger" title="La evaluación asistida y la anamnesis se contradicen">
               <ul className="space-y-1">
                 {mismatch?.map((message) => (
                   <li key={message}>{message}</li>

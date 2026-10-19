@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/portal/page-header';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { ConfirmAction } from '@/components/ui/confirm';
 import { Checkbox, Field, Input, LabelledInput, Select, Textarea } from '@/components/ui/field';
@@ -142,19 +143,16 @@ export default function PreguntasPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">Preguntas del ingreso</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Las {(questions.data ?? []).length} preguntas que el técnico toma antes de las
-            fotografías.
-          </p>
-        </div>
-        <Button size="sm" onClick={() => setDraft({ ...EMPTY_DRAFT })}>
-          <Plus className="h-4 w-4" aria-hidden />
-          Nueva pregunta
-        </Button>
-      </header>
+      <PageHeader
+        title="Preguntas del ingreso"
+        description={`Las ${(questions.data ?? []).length} preguntas que el técnico toma antes de las fotografías.`}
+        actions={
+          <Button size="sm" onClick={() => setDraft({ ...EMPTY_DRAFT })}>
+            <Plus className="h-4 w-4" aria-hidden />
+            Nueva pregunta
+          </Button>
+        }
+      />
 
       <Alert tone="info" title="Qué se puede cambiar y qué no">
         Una pregunta que <strong>nadie ha respondido todavía</strong> se edita entera y se elimina.
@@ -331,7 +329,7 @@ export default function PreguntasPage(): JSX.Element {
                         ) : null}
                       </span>
                       <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                        <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-[11px] text-neutral-500">
+                        <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-500">
                           {question.key}
                         </code>
                         <Badge variant="outline">{question.type}</Badge>
@@ -341,7 +339,7 @@ export default function PreguntasPage(): JSX.Element {
                         {!value.active ? <Badge variant="outline">retirada</Badge> : null}
                         {question.locked ? (
                           <span
-                            className="inline-flex items-center gap-1 text-[11px] text-neutral-500"
+                            className="inline-flex items-center gap-1 text-xs text-neutral-500"
                             title="Su definición se congeló porque ya tiene respuestas registradas."
                           >
                             <Lock className="h-3 w-3" aria-hidden />

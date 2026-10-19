@@ -165,7 +165,7 @@ export function UserTable({
                           </Badge>
                         ) : null}
                       </p>
-                      <p className="font-mono text-[11px] text-neutral-500">
+                      <p className="font-mono text-xs text-neutral-500">
                         {member.email}
                       </p>
                     </Td>

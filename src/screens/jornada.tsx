@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useSession } from '@/components/session-provider';
 import { StudyModeBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/portal/page-header';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Field, Input, Select } from '@/components/ui/field';
 import { Alert, EmptyState, Loading } from '@/components/ui/feedback';
@@ -47,15 +48,10 @@ export default function JornadaPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">Jornada de trabajo</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Anexo 7 · TCAD = NCR / TJ. El sistema cuenta los casos revisados; usted declara la
-            duración de la jornada.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Jornada de trabajo"
+        description="El sistema cuenta los casos revisados durante la jornada; usted declara su duración al cerrarla."
+      />
 
       <Card>
         <CardHeader title={active.data != null ? 'Jornada en curso' : 'Abrir jornada'} />

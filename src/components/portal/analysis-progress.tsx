@@ -31,16 +31,16 @@ export function AnalysisProgress({
   const percent = Math.round(92 * (1 - Math.exp(-elapsed / expectedSeconds)));
   const stage =
     status === 'pendiente'
-      ? 'En cola: esperando al motor de IA…'
+      ? 'En cola: esperando al servicio de análisis…'
       : elapsed < 3
         ? 'Preparando la fotografía…'
-        : 'Los modelos están leyendo el caso y generando los mapas de calor…';
+        : 'Analizando las tomas y generando los mapas de atención…';
 
   return (
     <div className="space-y-2" role="status" aria-live="polite">
       <div className="flex items-center justify-between text-sm">
         <span className="flex items-center gap-2 text-neutral-700">
-          <Loader2 className="h-4 w-4 animate-spin text-violet-700" aria-hidden />
+          <Loader2 className="h-4 w-4 animate-spin text-purple-900" aria-hidden />
           {stage}
         </span>
         <span className="tabular-nums text-neutral-500">{elapsed} s</span>
@@ -50,7 +50,7 @@ export function AnalysisProgress({
         aria-hidden
       >
         <div
-          className="h-full rounded-full bg-violet-700 transition-[width] duration-500 ease-out animate-pulse"
+          className="h-full rounded-full bg-purple-900 transition-[width] duration-500 ease-out animate-pulse"
           style={{ width: `${Math.max(4, percent)}%` }}
         />
       </div>

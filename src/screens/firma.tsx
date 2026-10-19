@@ -4,6 +4,7 @@ import { PenLine, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/portal/page-header';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { ConfirmAction } from '@/components/ui/confirm';
 import { Alert, EmptyState, ErrorState, Loading } from '@/components/ui/feedback';
@@ -57,12 +58,7 @@ export default function FirmaPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-xl font-bold text-neutral-900">Firma</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Se imprime en cada receta que usted emite.
-        </p>
-      </header>
+      <PageHeader title="Firma" description="Se imprime en cada receta que usted emite." />
 
       <Alert tone="warning" title="No es una firma electrónica reconocida">
         Es la rúbrica que el paciente espera ver impresa. Lo que permite detectar una receta

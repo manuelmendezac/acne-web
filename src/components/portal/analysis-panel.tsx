@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Brain, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, RefreshCw, ScanFace } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { AiAssessment } from '@/components/portal/ai-assessment';
@@ -137,8 +137,8 @@ export function AnalysisPanel({
   return (
     <Card>
       <CardHeader
-        title="Análisis con IA"
-        description="El modelo lee la fotografía junto con las respuestas de la anamnesis y devuelve una clase IGA sugerida con su fundamento."
+        title="Análisis asistido"
+        description="El sistema analiza las fotografías junto con la anamnesis y propone una clase IGA con su fundamento."
         action={
           done ? (
             <Badge variant="success">Analizado</Badge>
@@ -163,7 +163,7 @@ export function AnalysisPanel({
 
         {imageCount > 0 && !anamnesisReady ? (
           <Alert tone="warning" title="Guarde la anamnesis antes de analizar">
-            El modelo lee las respuestas tal como estén archivadas en el momento del análisis. Si
+            El análisis toma las respuestas tal como estén archivadas en ese momento. Si
             analiza ahora, la lectura saldrá hecha solo con la fotografía y nada indicará después
             que el cuestionario no llegó a viajar con ella.
           </Alert>
@@ -176,7 +176,7 @@ export function AnalysisPanel({
               disabled={imageCount === 0 || protocolIncomplete || !anamnesisReady}
               onClick={() => void analyse.run()}
             >
-              <Brain className="h-4 w-4" aria-hidden />
+              <ScanFace className="h-4 w-4" aria-hidden />
               {failed ? 'Reintentar el análisis' : 'Analizar el caso'}
             </Button>
           </div>
@@ -225,7 +225,7 @@ export function AnalysisPanel({
           <div className="space-y-4">
             <AnamnesisMismatchAlert messages={mismatch} />
             {noAcne !== null ? (
-              <Alert tone="warning" title={noSuggestion ? 'Sin sugerencia de IA' : noAcne.title}>
+              <Alert tone="warning" title={noSuggestion ? 'Sin sugerencia del sistema' : noAcne.title}>
                 {noAcne.message}
               </Alert>
             ) : null}
@@ -242,7 +242,7 @@ export function AnalysisPanel({
                 </span>
                 <div>
                   <p className="text-xs text-neutral-500">Clase IGA sugerida para el caso</p>
-                  <p className="text-2xl font-bold text-violet-700">
+                  <p className="text-2xl font-bold text-purple-900">
                     {igaLabel(catalogs, current.igaClass)}
                   </p>
                 </div>
@@ -270,7 +270,7 @@ export function AnalysisPanel({
                       </span>
                       <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
                         <div
-                          className="h-full rounded-full bg-violet-700"
+                          className="h-full rounded-full bg-purple-900"
                           style={{ width: `${Math.round(probability * 100)}%` }}
                         />
                       </div>
@@ -304,9 +304,9 @@ export function AnalysisPanel({
             {/* La lectura entra en el historial del paciente, y de ahí que se diga aquí qué es y
                 qué no es: quien la lea dentro de seis meses no tendrá esta pantalla delante. */}
             <Alert tone="info" title="Esto es una sugerencia, no un diagnóstico">
-              La lectura queda registrada en la historia del paciente como lo que es: la opinión del
-              modelo. El diagnóstico lo firma el especialista en la ficha del caso, y es ese el que
-              vale (RNF-06).
+              La lectura queda registrada en la historia del paciente como lo que es: una
+              sugerencia del sistema. El diagnóstico lo firma el especialista en la ficha del caso,
+              y es ese el que vale.
             </Alert>
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500">
@@ -321,7 +321,7 @@ export function AnalysisPanel({
                 Volver a analizar
               </Button>
               <span>
-                Modelo: <code>{latest?.modelVersion ?? '—'}</code>
+                Versión del análisis: <code>{latest?.modelVersion ?? '—'}</code>
               </span>
             </div>
 
@@ -330,10 +330,10 @@ export function AnalysisPanel({
                 <span className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                   <span>
-                    El motor opera con el clasificador determinista{' '}
+                    El servicio de análisis opera en modo de demostración{' '}
                     <code>{latest.modelVersion}</code>. Esta sugerencia{' '}
-                    <strong>no proviene de una CNN entrenada</strong> y no puede citarse como
-                    resultado de la tesis.
+                    <strong>no proviene del clasificador entrenado</strong> y no puede citarse
+                    como resultado.
                   </span>
                 </span>
               </Alert>

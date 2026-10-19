@@ -100,7 +100,7 @@ describe('CaseAnalysisMatrix', () => {
     expect(screen.getByText('decide')).toBeInTheDocument();
     expect(screen.getByText('Acuerdo entre tomas: Mayoría')).toBeInTheDocument();
     // The case row names the combined class; cells disagreeing with it are amber.
-    expect(screen.getAllByText('Moderado').at(-1)).toHaveClass('text-violet-700');
+    expect(screen.getAllByText('Moderado').at(-1)).toHaveClass('text-purple-900');
     expect(screen.getAllByText('Leve')[0]).toHaveClass('text-amber-700');
   });
 

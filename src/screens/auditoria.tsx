@@ -4,6 +4,7 @@ import { ShieldAlert, ShieldCheck } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { AuditTrail } from '@/components/portal/audit-trail';
+import { PageHeader } from '@/components/portal/page-header';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Alert, Loading } from '@/components/ui/feedback';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@/components/ui/table';
@@ -21,12 +22,10 @@ export default function AuditoriaPage() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-xl font-bold text-neutral-900">Auditoría de la tesis</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Matriz de cobertura de objetivos y verificación de la variable independiente.
-        </p>
-      </header>
+      <PageHeader
+        title="Auditoría de la tesis"
+        description="Matriz de cobertura de objetivos y verificación de la variable independiente."
+      />
 
       <Card className={iia.data?.operational === true ? 'border-emerald-600/50' : 'border-amber-500/50'}>
         <CardHeader
@@ -187,7 +186,7 @@ export default function AuditoriaPage() {
                           {entry.modules.map((module) => (
                             <code
                               key={module}
-                              className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-500"
+                              className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-500"
                             >
                               {module}
                             </code>

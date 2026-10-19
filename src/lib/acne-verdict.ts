@@ -40,7 +40,7 @@ export function describeNoAcne(
       scope: 'all',
       title: 'Incongruencia: la imagen no parece corresponder a acné',
       message:
-        'Ninguna toma muestra acné ni piel sana según el modelo, así que no hay grado IGA ' +
+        'Ninguna toma muestra acné ni piel sana según el análisis, así que no hay grado IGA ' +
         'sugerido. Puede tratarse de otra condición de la piel (vitíligo, psoriasis, rosácea…). ' +
         'Verifique las fotografías o valore al paciente; el diagnóstico sigue siendo suyo.',
       key: `all:${key}`,
@@ -51,7 +51,7 @@ export function describeNoAcne(
     title: 'Aviso: una toma parece mostrar otra condición',
     message:
       `${labels} no ${flagged.length === 1 ? 'muestra' : 'muestran'} acné ni piel sana según el ` +
-      'modelo y quedó fuera de la sugerencia del caso. Verifique la fotografía.',
+      'análisis y quedó fuera de la sugerencia del caso. Verifique la fotografía.',
     key: `some:${key}`,
   };
 }

@@ -1,19 +1,20 @@
-'use client';
+"use client";
 
-import { Download, FlaskConical } from 'lucide-react';
-import { useState } from 'react';
+import { Download, FlaskConical } from "lucide-react";
+import { useState } from "react";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
-import { Alert } from '@/components/ui/feedback';
-import { Table, Tbody, Td, Th, Thead, Tr } from '@/components/ui/table';
-import { api, type PostResult } from '@/lib/api';
-import { num, pValue } from '@/lib/format';
-import { useAction } from '@/lib/use-api';
-import { useCatalogs } from '@/lib/use-catalogs';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/portal/page-header";
+import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Alert } from "@/components/ui/feedback";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
+import { api, type PostResult } from "@/lib/api";
+import { num, pValue } from "@/lib/format";
+import { useAction } from "@/lib/use-api";
+import { useCatalogs } from "@/lib/use-catalogs";
 
-type GeneralResult = PostResult<'/stats/hypothesis/all'>;
+type GeneralResult = PostResult<"/stats/hypothesis/all">;
 
 /**
  * One-click statistical panel (Sección 9.3).
@@ -28,7 +29,7 @@ export default function EstadisticaPage() {
   const { data: catalogs } = useCatalogs();
 
   const { run, pending, error } = useAction(async () =>
-    api.post<GeneralResult>('/stats/hypothesis/all', { includeSynthetic }),
+    api.post<GeneralResult>("/stats/hypothesis/all", { includeSynthetic }),
   );
 
   async function execute(): Promise<void> {
@@ -38,33 +39,30 @@ export default function EstadisticaPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">Análisis estadístico</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Shapiro-Wilk sobre las diferencias pareadas → t de Student para muestras relacionadas o
-            Wilcoxon de rangos con signo, según normalidad. α = 0,05.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => void execute()} loading={pending}>
-            <FlaskConical className="h-4 w-4" aria-hidden />
-            Contrastar HE₁–HE₄
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              void api.download(
-                `/reports/contraste-hipotesis/pdf?includeSynthetic=${includeSynthetic}`,
-                'REPORTE-CONTRASTE-HIPOTESIS.pdf',
-              )
-            }
-          >
-            <Download className="h-4 w-4" aria-hidden />
-            Reporte PDF
-          </Button>
-        </div>
-      </header>
+      <PageHeader
+        title="Análisis estadístico"
+        description="Shapiro-Wilk sobre las diferencias pareadas → t de Student para muestras relacionadas o Wilcoxon de rangos con signo, según normalidad. α = 0,05."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => void execute()} loading={pending}>
+              <FlaskConical className="h-4 w-4" aria-hidden />
+              Contrastar HE₁–HE₄
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                void api.download(
+                  `/reports/contraste-hipotesis/pdf?includeSynthetic=${includeSynthetic}`,
+                  "REPORTE-CONTRASTE-HIPOTESIS.pdf",
+                )
+              }
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              Reporte PDF
+            </Button>
+          </div>
+        }
+      />
 
       <label className="flex w-fit items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm">
         <input
@@ -86,29 +84,35 @@ export default function EstadisticaPage() {
         <Card>
           <CardBody>
             <p className="py-8 text-center text-sm text-neutral-500">
-              Pulse <strong>Contrastar HE₁–HE₄</strong> para ejecutar las cuatro pruebas y derivar
-              la conclusión sobre la hipótesis general H₁.
+              Pulse <strong>Contrastar HE₁–HE₄</strong> para ejecutar las cuatro
+              pruebas y derivar la conclusión sobre la hipótesis general H₁.
             </p>
           </CardBody>
         </Card>
       ) : (
         <>
-          <Card className={result.rejectsNull ? 'border-emerald-600/50' : 'border-amber-500/50'}>
+          <Card
+            className={
+              result.rejectsNull
+                ? "border-emerald-600/50"
+                : "border-amber-500/50"
+            }
+          >
             <CardHeader
               title="Hipótesis general (OG)"
               action={
-                <Badge variant={result.rejectsNull ? 'success' : 'warning'}>
-                  {result.rejectsNull ? 'Se rechaza H₀' : 'No se rechaza H₀'}
+                <Badge variant={result.rejectsNull ? "success" : "warning"}>
+                  {result.rejectsNull ? "Se rechaza H₀" : "No se rechaza H₀"}
                 </Badge>
               }
             />
             <CardBody className="space-y-3 text-sm">
               <p>
-                <strong className="text-neutral-900">H₁:</strong>{' '}
+                <strong className="text-neutral-900">H₁:</strong>{" "}
                 <span className="text-neutral-500">{result.h1}</span>
               </p>
               <p>
-                <strong className="text-neutral-900">H₀:</strong>{' '}
+                <strong className="text-neutral-900">H₀:</strong>{" "}
                 <span className="text-neutral-500">{result.h0}</span>
               </p>
               <p className="rounded-md border-l-4 border-purple-900 bg-purple-50 px-4 py-3 text-neutral-900">
@@ -145,27 +149,33 @@ export default function EstadisticaPage() {
                       <Td>
                         {test.normality.applicable ? (
                           <span className="text-xs">
-                            W = {num(test.normality.statistic, 4)}; p ={' '}
+                            W = {num(test.normality.statistic, 4)}; p ={" "}
                             {num(test.normality.pValue, 4)}
                             <br />
                             <span
                               className={
-                                test.normality.normal ? 'text-emerald-700' : 'text-amber-600'
+                                test.normality.normal
+                                  ? "text-emerald-700"
+                                  : "text-amber-600"
                               }
                             >
-                              {test.normality.normal ? 'Normal' : 'No normal'}
+                              {test.normality.normal ? "Normal" : "No normal"}
                             </span>
                           </span>
                         ) : (
-                          <span className="text-xs text-neutral-500">No aplicable</span>
+                          <span className="text-xs text-neutral-500">
+                            No aplicable
+                          </span>
                         )}
                       </Td>
                       <Td className="text-xs">{test.testLabel}</Td>
                       <Td numeric>{num(test.statistic, 4)}</Td>
                       <Td numeric>{pValue(test.pValue)}</Td>
                       <Td>
-                        <Badge variant={test.rejectsNull ? 'success' : 'neutral'}>
-                          {test.rejectsNull ? 'Rechaza H₀' : 'No rechaza'}
+                        <Badge
+                          variant={test.rejectsNull ? "success" : "neutral"}
+                        >
+                          {test.rejectsNull ? "Rechaza H₀" : "No rechaza"}
                         </Badge>
                       </Td>
                     </Tr>
@@ -181,8 +191,8 @@ export default function EstadisticaPage() {
                 title={`${test.hypothesis} — ${test.indicator}`}
                 description={test.statement}
                 action={
-                  <Badge variant={test.rejectsNull ? 'success' : 'neutral'}>
-                    {test.rejectsNull ? 'Se rechaza H₀' : 'No se rechaza H₀'}
+                  <Badge variant={test.rejectsNull ? "success" : "neutral"}>
+                    {test.rejectsNull ? "Se rechaza H₀" : "No se rechaza H₀"}
                   </Badge>
                 }
               />
@@ -199,7 +209,9 @@ export default function EstadisticaPage() {
 
                 {test.effectSize !== null ? (
                   <p className="text-sm text-neutral-500">
-                    <strong className="text-neutral-900">Tamaño del efecto:</strong>{' '}
+                    <strong className="text-neutral-900">
+                      Tamaño del efecto:
+                    </strong>{" "}
                     {test.effectSize.kind} = {num(test.effectSize.value, 4)} (
                     {test.effectSize.magnitude})
                   </p>
@@ -219,8 +231,8 @@ export default function EstadisticaPage() {
                   </summary>
                   <div className="border-t border-neutral-200 px-4 py-3">
                     <p className="mb-3 text-xs text-neutral-500">
-                      Ejecución <code>{test.id}</code> · semilla {test.seed} · función{' '}
-                      {test.functionVersion} · hash de insumos{' '}
+                      Ejecución <code>{test.id}</code> · semilla {test.seed} ·
+                      función {test.functionVersion} · hash de insumos{" "}
                       <code>{test.inputHash.slice(0, 16)}…</code> (RNF-05)
                     </p>
                     <Table>
@@ -251,7 +263,8 @@ export default function EstadisticaPage() {
 
           {catalogs !== null ? (
             <p className="text-xs text-neutral-500">
-              Referencia metodológica: {catalogs.references.find((r) => r.startsWith('Hernández'))}
+              Referencia metodológica:{" "}
+              {catalogs.references.find((r) => r.startsWith("Hernández"))}
             </p>
           ) : null}
         </>
@@ -264,7 +277,9 @@ function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-neutral-200 px-3 py-2">
       <p className="text-xs text-neutral-500">{label}</p>
-      <p className="text-lg font-semibold tabular-nums text-neutral-900">{value}</p>
+      <p className="text-lg font-semibold tabular-nums text-neutral-900">
+        {value}
+      </p>
     </div>
   );
 }

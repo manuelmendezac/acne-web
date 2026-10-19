@@ -161,8 +161,8 @@ export function CaptureQrPanel({
           {session === null ? (
             <div className="space-y-3">
               <p className="text-sm text-neutral-500">
-                Genere un código QR para que el paciente o el técnico tomen las fotografías desde el
-                teléfono. El enlace caduca a los 15 minutos.
+                Genere un código QR y escanéelo con el teléfono para tomar las fotografías del
+                paciente. El enlace caduca a los 15 minutos.
               </p>
               <Button
                 block
@@ -347,20 +347,20 @@ export function CaptureQrPanel({
 
                   {confirming === image.id ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-neutral-900/80 p-1">
-                      <span className="text-[10px] font-medium text-white">¿Quitarla?</span>
+                      <span className="text-xs font-medium text-white">¿Quitarla?</span>
                       <span className="flex gap-1">
                         <button
                           type="button"
                           disabled={removeImage.pending}
                           onClick={() => void removeImage.run(image.id)}
-                          className="rounded bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                          className="rounded bg-red-600 px-2 py-0.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                         >
                           Sí
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirming(null)}
-                          className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-neutral-900 hover:bg-neutral-100"
+                          className="rounded bg-white px-2 py-0.5 text-xs font-semibold text-neutral-900 hover:bg-neutral-100"
                         >
                           No
                         </button>
@@ -385,7 +385,7 @@ export function CaptureQrPanel({
                     if (event.target.value !== '') void relabel.run(image.id, event.target.value);
                   }}
                   className={cn(
-                    'w-full rounded-md border bg-white px-1 py-0.5 text-[11px]',
+                    'w-full rounded-md border bg-white px-1 py-0.5 text-xs',
                     image.shotKey === null
                       ? 'border-amber-400 text-amber-700'
                       : 'border-neutral-200 text-neutral-700',

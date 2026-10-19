@@ -1,31 +1,40 @@
-'use client';
+"use client";
 
-import { Download } from 'lucide-react';
-import { useState } from 'react';
+import { Download } from "lucide-react";
+import { useState } from "react";
 
-import { Badge, StudyModeBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
-import { Select } from '@/components/ui/field';
-import { EmptyState, ErrorState, Loading } from '@/components/ui/feedback';
-import { Table, Tbody, Td, Th, Thead, Tr } from '@/components/ui/table';
-import { api, type GetResult } from '@/lib/api';
-import { cn } from '@/lib/cn';
-import { date, num } from '@/lib/format';
-import { useApi } from '@/lib/use-api';
-import { igaLabel, useCatalogs } from '@/lib/use-catalogs';
+import { Badge, StudyModeBadge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/portal/page-header";
+import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Select } from "@/components/ui/field";
+import { EmptyState, ErrorState, Loading } from "@/components/ui/feedback";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
+import { api, type GetResult } from "@/lib/api";
+import { cn } from "@/lib/cn";
+import { date, num } from "@/lib/format";
+import { useApi } from "@/lib/use-api";
+import { igaLabel, useCatalogs } from "@/lib/use-catalogs";
 
-type Anexo4Row = GetResult<'/study/anexo-4'>[number];
-type Anexo5Row = GetResult<'/diagnoses/anexo-5'>[number];
-type Anexo7Row = GetResult<'/sessions/anexo-7'>[number];
+type Anexo4Row = GetResult<"/study/anexo-4">[number];
+type Anexo5Row = GetResult<"/diagnoses/anexo-5">[number];
+type Anexo7Row = GetResult<"/sessions/anexo-7">[number];
 
 const TABS = [
-  { key: 'anexo-4', label: 'Anexo 4 · Tiempo de revisión', objective: 'OE1' },
-  { key: 'anexo-5', label: 'Anexo 5 · Precisión diagnóstica', objective: 'OE2' },
-  { key: 'anexo-7', label: 'Anexo 7 · Capacidad de atención', objective: 'OE4' },
+  { key: "anexo-4", label: "Anexo 4 · Tiempo de revisión", objective: "OE1" },
+  {
+    key: "anexo-5",
+    label: "Anexo 5 · Precisión diagnóstica",
+    objective: "OE2",
+  },
+  {
+    key: "anexo-7",
+    label: "Anexo 7 · Capacidad de atención",
+    objective: "OE4",
+  },
 ] as const;
 
-type TabKey = (typeof TABS)[number]['key'];
+type TabKey = (typeof TABS)[number]["key"];
 
 /**
  * Digitised instruments.
@@ -35,46 +44,47 @@ type TabKey = (typeof TABS)[number]['key'];
  * shows, field for field.
  */
 export default function AnexosPage() {
-  const [tab, setTab] = useState<TabKey>('anexo-4');
-  const [studyMode, setStudyMode] = useState('');
+  const [tab, setTab] = useState<TabKey>("anexo-4");
+  const [studyMode, setStudyMode] = useState("");
   const [includeSynthetic, setIncludeSynthetic] = useState(true);
   const { data: catalogs } = useCatalogs();
 
   const query = {
-    studyMode: studyMode === '' ? undefined : studyMode,
+    studyMode: studyMode === "" ? undefined : studyMode,
     includeSynthetic,
   };
 
   const path =
-    tab === 'anexo-4' ? '/study/anexo-4' : tab === 'anexo-5' ? '/diagnoses/anexo-5' : '/sessions/anexo-7';
-  const rows = useApi<Anexo4Row[] | Anexo5Row[] | Anexo7Row[]>(path, query, [tab]);
+    tab === "anexo-4"
+      ? "/study/anexo-4"
+      : tab === "anexo-5"
+        ? "/diagnoses/anexo-5"
+        : "/sessions/anexo-7";
+  const rows = useApi<Anexo4Row[] | Anexo5Row[] | Anexo7Row[]>(path, query, [
+    tab,
+  ]);
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">
-            Instrumentos digitalizados
-          </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Las fichas de registro de los Anexos 4, 5 y 7, con los mismos campos del instrumento en
-            papel.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            void api.download(
-              `/stats/dataset-export?dataset=mediciones&includeSynthetic=${includeSynthetic}`,
-              'dataset-mediciones.csv',
-            )
-          }
-        >
-          <Download className="h-4 w-4" aria-hidden />
-          Exportar CSV
-        </Button>
-      </header>
+      <PageHeader
+        title="Instrumentos digitalizados"
+        description="Las fichas de registro de los Anexos 4, 5 y 7, con los mismos campos del instrumento en papel."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              void api.download(
+                `/stats/dataset-export?dataset=mediciones&includeSynthetic=${includeSynthetic}`,
+                "dataset-mediciones.csv",
+              )
+            }
+          >
+            <Download className="h-4 w-4" aria-hidden />
+            Exportar CSV
+          </Button>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {TABS.map((item) => (
@@ -83,10 +93,10 @@ export default function AnexosPage() {
             type="button"
             onClick={() => setTab(item.key)}
             className={cn(
-              'rounded-md border px-3 py-2 text-sm transition-colors',
+              "rounded-md border px-3 py-2 text-sm transition-colors",
               tab === item.key
-                ? 'border-purple-900 bg-purple-50 font-medium text-purple-900'
-                : 'border-neutral-200 text-neutral-500 hover:bg-neutral-100',
+                ? "border-purple-900 bg-purple-50 font-medium text-purple-900"
+                : "border-neutral-200 text-neutral-500 hover:bg-neutral-100",
             )}
           >
             {item.label}
@@ -99,7 +109,7 @@ export default function AnexosPage() {
 
       <Card>
         <CardHeader
-          title={TABS.find((item) => item.key === tab)?.label ?? ''}
+          title={TABS.find((item) => item.key === tab)?.label ?? ""}
           action={
             <div className="flex flex-wrap items-center gap-3">
               <Select
@@ -115,7 +125,9 @@ export default function AnexosPage() {
                 <input
                   type="checkbox"
                   checked={includeSynthetic}
-                  onChange={(event) => setIncludeSynthetic(event.target.checked)}
+                  onChange={(event) =>
+                    setIncludeSynthetic(event.target.checked)
+                  }
                   className="h-4 w-4 rounded border-neutral-300 text-purple-900 focus:ring-purple-900"
                 />
                 Sintéticos
@@ -132,7 +144,7 @@ export default function AnexosPage() {
             </div>
           ) : (rows.data ?? []).length === 0 ? (
             <EmptyState title="Sin registros para este filtro" />
-          ) : tab === 'anexo-4' ? (
+          ) : tab === "anexo-4" ? (
             <Table caption="N.º · fecha · N.º de caso / ID de paciente · hora de inicio de revisión · tiempo de revisión (min).">
               <Thead>
                 <Tr>
@@ -153,15 +165,17 @@ export default function AnexosPage() {
                     <Td numeric>{row.number}</Td>
                     <Td>{date(row.date)}</Td>
                     <Td className="font-mono text-xs">{row.caseCode}</Td>
-                    <Td className="font-mono text-xs text-neutral-500">{row.patientCode}</Td>
+                    <Td className="font-mono text-xs text-neutral-500">
+                      {row.patientCode}
+                    </Td>
                     <Td className="text-sm">{row.professional}</Td>
                     <Td>
                       <StudyModeBadge mode={row.studyMode} />
                     </Td>
                     <Td className="text-sm text-neutral-500">
-                      {new Date(row.startTime).toLocaleTimeString('es-PE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                      {new Date(row.startTime).toLocaleTimeString("es-PE", {
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </Td>
                     <Td numeric className="font-medium">
@@ -178,7 +192,7 @@ export default function AnexosPage() {
                 ))}
               </Tbody>
             </Table>
-          ) : tab === 'anexo-5' ? (
+          ) : tab === "anexo-5" ? (
             <Table caption="N.º · fecha · diagnóstico IA · diagnóstico de referencia · resultado. La columna «patrón» declara contra qué se evaluó cada fila.">
               <Thead>
                 <Tr>
@@ -204,13 +218,15 @@ export default function AnexosPage() {
                     </Td>
                     <Td>{igaLabel(catalogs, row.aiDiagnosis)}</Td>
                     <Td numeric>
-                      {row.aiConfidence === null ? '—' : `${num(row.aiConfidence * 100, 1)} %`}
+                      {row.aiConfidence === null
+                        ? "—"
+                        : `${num(row.aiConfidence * 100, 1)} %`}
                     </Td>
                     <Td>{igaLabel(catalogs, row.referenceDiagnosis)}</Td>
                     <Td>
                       {row.result === null ? (
                         <Badge variant="outline">—</Badge>
-                      ) : row.result === 'correcto' ? (
+                      ) : row.result === "correcto" ? (
                         <Badge variant="success">Correcto</Badge>
                       ) : (
                         <Badge variant="danger">Incorrecto</Badge>

@@ -72,7 +72,7 @@ export default function UsuarioDetallePage(): JSX.Element {
       </Link>
 
       <header>
-        <h1 className="text-xl font-bold text-neutral-900">
+        <h1 className="text-xl font-semibold tracking-tight text-neutral-900">
           {staff.fullName}
         </h1>
         <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-neutral-500">

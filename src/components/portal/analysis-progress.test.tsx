@@ -30,6 +30,6 @@ describe('AnalysisProgress', () => {
     const width = parseFloat(bar().style.width);
     expect(width).toBeGreaterThan(80);
     expect(width).toBeLessThan(100);
-    expect(screen.getByText(/leyendo el caso/)).toBeInTheDocument();
+    expect(screen.getByText(/Analizando las tomas/)).toBeInTheDocument();
   });
 });

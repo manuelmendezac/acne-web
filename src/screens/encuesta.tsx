@@ -1,21 +1,22 @@
-'use client';
+"use client";
 
-import { CheckCircle2, Download, Send } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { CheckCircle2, Download, Send } from "lucide-react";
+import { useState, type FormEvent } from "react";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/field';
-import { Alert, Loading } from '@/components/ui/feedback';
-import { api, type GetResult } from '@/lib/api';
-import { cn } from '@/lib/cn';
-import { num, pct } from '@/lib/format';
-import { useAction, useApi } from '@/lib/use-api';
-import { useCatalogs } from '@/lib/use-catalogs';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/portal/page-header";
+import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/field";
+import { Alert, Loading } from "@/components/ui/feedback";
+import { api, type GetResult } from "@/lib/api";
+import { cn } from "@/lib/cn";
+import { num, pct } from "@/lib/format";
+import { useAction, useApi } from "@/lib/use-api";
+import { useCatalogs } from "@/lib/use-catalogs";
 
-type SurveyStatus = GetResult<'/surveys/status'>;
-type SurveySummary = GetResult<'/surveys/summary'>;
+type SurveyStatus = GetResult<"/surveys/status">;
+type SurveySummary = GetResult<"/surveys/summary">;
 
 /**
  * Anexo 6 — Likert questionnaire (OE3).
@@ -25,27 +26,33 @@ type SurveySummary = GetResult<'/surveys/summary'>;
  */
 export default function EncuestaPage() {
   const { data: catalogs } = useCatalogs();
-  const status = useApi<SurveyStatus>('/surveys/status');
-  const summary = useApi<SurveySummary>('/surveys/summary', { includeSynthetic: true });
+  const status = useApi<SurveyStatus>("/surveys/status");
+  const summary = useApi<SurveySummary>("/surveys/summary", {
+    includeSynthetic: true,
+  });
 
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [comments, setComments] = useState('');
+  const [comments, setComments] = useState("");
 
   const submit = useAction(async () =>
-    api.post('/surveys', {
+    api.post("/surveys", {
       answers: Object.entries(answers).map(([itemNumber, score]) => ({
         itemNumber: Number(itemNumber),
         score,
       })),
-      comments: comments === '' ? undefined : comments,
+      comments: comments === "" ? undefined : comments,
     }),
   );
 
   const items = catalogs?.survey.items ?? [];
   const scale = catalogs?.survey.scale ?? {};
-  const complete = items.length > 0 && items.every((item) => answers[item.number] !== undefined);
+  const complete =
+    items.length > 0 &&
+    items.every((item) => answers[item.number] !== undefined);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
     event.preventDefault();
     if (!complete) return;
     const result = await submit.run();
@@ -57,35 +64,32 @@ export default function EncuestaPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">
-            Cuestionario de satisfacción
-          </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Anexo 6 · 8 ítems Likert · TSP = (Σ PO / PT) × 100, con PT = 40 puntos por encuestado.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            void api.download(
-              '/reports/usabilidad/pdf?includeSynthetic=true',
-              'REPORTE-USABILIDAD.pdf',
-            )
-          }
-        >
-          <Download className="h-4 w-4" aria-hidden />
-          Reporte PDF
-        </Button>
-      </header>
+      <PageHeader
+        title="Cuestionario de satisfacción"
+        description="Ocho afirmaciones sobre su experiencia con el sistema, en una escala de 1 a 5. Se responde una sola vez."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              void api.download(
+                "/reports/usabilidad/pdf?includeSynthetic=true",
+                "REPORTE-USABILIDAD.pdf",
+              )
+            }
+          >
+            <Download className="h-4 w-4" aria-hidden />
+            Reporte PDF
+          </Button>
+        }
+      />
 
       {status.loading ? (
         <Loading />
       ) : status.data?.completed === true ? (
         <Alert tone="success" title="Ya respondió el cuestionario">
-          El instrumento del Anexo 6 se aplica una única vez por profesional al final del postest.
+          El instrumento del Anexo 6 se aplica una única vez por profesional al
+          final del postest.
         </Alert>
       ) : (
         <Card>
@@ -93,7 +97,7 @@ export default function EncuestaPage() {
             title="Sus respuestas"
             description={
               status.data?.due === true
-                ? 'Ha alcanzado el umbral de casos postest configurado.'
+                ? "Ha alcanzado el umbral de casos postest configurado."
                 : `Se activa automáticamente al completar ${status.data?.triggerThreshold ?? 10} casos en postest. Lleva ${status.data?.postestCasesCompleted ?? 0}.`
             }
           />
@@ -113,17 +117,22 @@ export default function EncuestaPage() {
                           type="button"
                           aria-pressed={selected}
                           onClick={() =>
-                            setAnswers((current) => ({ ...current, [item.number]: score }))
+                            setAnswers((current) => ({
+                              ...current,
+                              [item.number]: score,
+                            }))
                           }
                           className={cn(
-                            'flex min-w-24 flex-col items-center rounded-md border px-3 py-2 text-xs transition-colors',
+                            "flex min-w-24 flex-col items-center rounded-md border px-3 py-2 text-xs transition-colors",
                             selected
-                              ? 'border-purple-900 bg-purple-50 font-medium text-purple-900'
-                              : 'border-neutral-200 text-neutral-500 hover:border-purple-900/50 hover:bg-neutral-100',
+                              ? "border-purple-900 bg-purple-50 font-medium text-purple-900"
+                              : "border-neutral-200 text-neutral-500 hover:border-purple-900/50 hover:bg-neutral-100",
                           )}
                         >
-                          <span className="text-base font-semibold">{score}</span>
-                          <span>{scale[String(score)] ?? ''}</span>
+                          <span className="text-base font-semibold">
+                            {score}
+                          </span>
+                          <span>{scale[String(score)] ?? ""}</span>
                         </button>
                       );
                     })}
@@ -143,12 +152,20 @@ export default function EncuestaPage() {
               </label>
 
               {submit.error !== null ? (
-                <Alert tone="danger" title="No se pudo registrar el cuestionario">
+                <Alert
+                  tone="danger"
+                  title="No se pudo registrar el cuestionario"
+                >
                   {submit.error.message}
                 </Alert>
               ) : null}
 
-              <Button type="submit" block loading={submit.pending} disabled={!complete}>
+              <Button
+                type="submit"
+                block
+                loading={submit.pending}
+                disabled={!complete}
+              >
                 <Send className="h-4 w-4" aria-hidden />
                 Enviar cuestionario
               </Button>
@@ -166,8 +183,8 @@ export default function EncuestaPage() {
         <CardHeader
           title="Resultados agregados (TSP)"
           action={
-            summary.data?.targetMet === null || summary.data === null ? null : summary.data
-                .targetMet ? (
+            summary.data?.targetMet === null ||
+            summary.data === null ? null : summary.data.targetMet ? (
               <Badge variant="success">
                 <CheckCircle2 className="h-3 w-3" aria-hidden /> Cumple meta
               </Badge>
@@ -180,13 +197,21 @@ export default function EncuestaPage() {
           {summary.loading ? (
             <Loading />
           ) : summary.data === null || summary.data.respondents === 0 ? (
-            <p className="py-6 text-center text-sm text-neutral-500">Aún no hay respuestas.</p>
+            <p className="py-6 text-center text-sm text-neutral-500">
+              Aún no hay respuestas.
+            </p>
           ) : (
             <>
               <div className="grid gap-3 sm:grid-cols-3">
-                <Metric label="Encuestados" value={String(summary.data.respondents)} />
+                <Metric
+                  label="Encuestados"
+                  value={String(summary.data.respondents)}
+                />
                 <Metric label="TSP" value={pct(summary.data.tspPct)} />
-                <Metric label="Likert promedio" value={`${num(summary.data.meanLikert)} / 5`} />
+                <Metric
+                  label="Likert promedio"
+                  value={`${num(summary.data.meanLikert)} / 5`}
+                />
               </div>
 
               {summary.data.alert !== null ? (
@@ -195,9 +220,13 @@ export default function EncuestaPage() {
 
               <div className="space-y-3">
                 {summary.data.items.map((item) => (
-                  <div key={item.itemNumber} className="rounded-md border border-neutral-200 px-3 py-2">
+                  <div
+                    key={item.itemNumber}
+                    className="rounded-md border border-neutral-200 px-3 py-2"
+                  >
                     <p className="text-sm text-neutral-900">
-                      <span className="font-medium">{item.itemNumber}.</span> {item.text}
+                      <span className="font-medium">{item.itemNumber}.</span>{" "}
+                      {item.text}
                     </p>
                     <div className="mt-2 flex items-center gap-3">
                       <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
@@ -225,7 +254,9 @@ function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-neutral-200 px-3 py-2">
       <p className="text-xs text-neutral-500">{label}</p>
-      <p className="text-lg font-semibold tabular-nums text-neutral-900">{value}</p>
+      <p className="text-lg font-semibold tabular-nums text-neutral-900">
+        {value}
+      </p>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function AnamnesisMismatchAlert({ messages }: { messages: readonly string
         ))}
       </ul>
       <p className="mt-2 text-xs">
-        Aviso informativo generado a partir de la sugerencia del modelo; la decisión es del
+        Aviso informativo generado a partir de la evaluación asistida; la decisión es del
         profesional.
       </p>
     </Alert>

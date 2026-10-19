@@ -43,7 +43,7 @@ export function EnsembleVotes({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-neutral-900">Lectura de cada modelo</p>
+        <p className="text-sm font-semibold text-neutral-900">Lectura por clasificador</p>
         {badge !== null ? (
           <Badge variant={badge.variant}>
             Acuerdo: {badge.label}
@@ -54,12 +54,12 @@ export function EnsembleVotes({
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-neutral-500">
-              <th className="py-1 pr-3 font-medium">Modelo</th>
+              <th className="py-1 pr-3 font-medium">Clasificador</th>
               <th className="py-1 pr-3 font-medium">Clase</th>
               <th className="py-1 pr-3 font-medium text-right">Confianza</th>
               <th className="py-1 pr-3 font-medium text-right">Peso (F1)</th>
               <th className="py-1 pr-3 font-medium text-right">ms</th>
-              {onSelectHeatmap !== undefined ? <th className="py-1 font-medium">Grad-CAM</th> : null}
+              {onSelectHeatmap !== undefined ? <th className="py-1 font-medium">Mapa</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -110,7 +110,7 @@ export function EnsembleVotes({
         </table>
       </div>
       <p className="text-xs text-neutral-500">
-        La clase sugerida es la lectura íntegra del modelo más seguro sobre esta toma; a igual
+        La clase sugerida es la lectura íntegra del clasificador más seguro sobre esta toma; a igual
         confianza gana el de mayor F1 en el conjunto de prueba. Una lectura en ámbar difiere de la
         sugerida.
       </p>

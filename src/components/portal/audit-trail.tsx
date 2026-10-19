@@ -124,7 +124,7 @@ export function AuditTrail(): JSX.Element {
                         <span className="text-xs">{log.userEmail}</span>
                       )}
                       {log.ipAddress === null ? null : (
-                        <p className="font-mono text-[11px] text-neutral-500">
+                        <p className="font-mono text-xs text-neutral-500">
                           {log.ipAddress}
                         </p>
                       )}
@@ -134,7 +134,7 @@ export function AuditTrail(): JSX.Element {
                         {log.entityLabel}
                       </span>
                       {log.entityId === null ? null : (
-                        <p className="font-mono text-[11px] text-neutral-500">
+                        <p className="font-mono text-xs text-neutral-500">
                           {log.entityId.slice(0, 8)}…
                         </p>
                       )}
@@ -143,7 +143,7 @@ export function AuditTrail(): JSX.Element {
                       {log.metadata === null ? (
                         <span className="text-neutral-500">—</span>
                       ) : (
-                        <code className="block break-words text-[11px] leading-relaxed">
+                        <code className="block break-words text-xs leading-relaxed">
                           {formatMetadata(log.metadata, catalogs)}
                         </code>
                       )}
