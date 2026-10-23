@@ -22,6 +22,13 @@ const analysis = (overrides: Partial<NoAcneAnalysisLike>): NoAcneAnalysisLike =>
 });
 
 describe('describeNoAcne', () => {
+  it('leaves the views the second opinion stopped to its own, more specific warning', () => {
+    const views = VIEWS.map((v) => ({ ...v, inference: { verdictSource: 'segunda_opinion' as const } }));
+    expect(
+      describeNoAcne(analysis({ verdict: 'no_acne', noAcneViews: ['a', 'b', 'c'], views }), SHOTS),
+    ).toBeNull();
+  });
+
   it('says nothing when every view shows acne', () => {
     expect(describeNoAcne(analysis({}), SHOTS)).toBeNull();
     expect(describeNoAcne(null, SHOTS)).toBeNull();

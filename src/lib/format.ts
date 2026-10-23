@@ -39,6 +39,10 @@ export function pValue(value: number | null | undefined): string {
 
 export function date(iso: string | null | undefined): string {
   if (!iso) return '—';
+  // Una fecha sin hora (`2026-10-19`) ya es la fecha civil: `new Date()` la leería como medianoche UTC
+  // y en Lima (UTC-5) se mostraría un día antes.
+  const civil = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (civil) return `${civil[3]}/${civil[2]}/${civil[1]}`;
   const parsed = new Date(iso);
   // Dates DO follow the Peruvian convention (dd/mm/aaaa); only the decimal separator differs.
   return Number.isNaN(parsed.getTime())

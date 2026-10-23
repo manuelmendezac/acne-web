@@ -9,6 +9,7 @@ import { AiAssessment } from '@/components/portal/ai-assessment';
 import { AnamnesisMismatchAlert } from '@/components/portal/anamnesis-mismatch-alert';
 import { AnalysisProgress } from '@/components/portal/analysis-progress';
 import { CaseAnalysisMatrix } from '@/components/portal/case-analysis-matrix';
+import { SecondOpinionAlert } from '@/components/portal/second-opinion-alert';
 import { AnamnesisSummary } from '@/components/portal/anamnesis-summary';
 import { CaseBranchActions } from '@/components/portal/case-branch-actions';
 import {
@@ -27,6 +28,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Alert, ErrorState, Loading, StudyModeBlocked } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
 import { describeNoAcne } from '@/lib/acne-verdict';
+import { describeSecondOpinion } from '@/lib/second-opinion';
 import { api, ApiError, type GetResult, type PostResult } from '@/lib/api';
 import { date, num, pct } from '@/lib/format';
 import { listShotLabels, shotLabel } from '@/lib/shots';
@@ -53,7 +55,14 @@ const PERMISSION_GROUPS: Record<string, string> = {
 };
 
 /** The API returns diagnoses as an untyped list on the detail; narrow it for rendering. */
-type CaseDiagnosis = { id: string; igaClass: string; studyMode: string; createdAt: string };
+type CaseDiagnosis = {
+  id: string;
+  igaClass: string;
+  studyMode: string;
+  createdAt: string;
+  originalIgaClass?: string | null;
+  correctionReason?: string | null;
+};
 
 /**
  * Case review screen.
@@ -90,12 +99,12 @@ export default function CasoDetallePage() {
     setLoading(true);
     setError(null);
     try {
-      // Only the dermatologist starts the measured review. The technician needs a read-only view
-      // of the case and must not create a review timing entry.
+      // Only the dermatologist starts the measured review. The technician and the administrator
+      // need a read-only view of the case and must not create a review timing entry.
       const result =
-        user.role === 'tecnico'
-          ? await api.getPath<CaseDetail>(`/cases/${caseId}`)
-          : await api.post<CaseDetail>(`/cases/${caseId}/open`);
+        user.role === 'dermatologo'
+          ? await api.post<CaseDetail>(`/cases/${caseId}/open`)
+          : await api.getPath<CaseDetail>(`/cases/${caseId}`);
       setDetail(result);
       const clinical = result.images.find((image) => !image.isHeatmap);
       setSelectedImage(clinical?.id ?? null);
@@ -178,6 +187,18 @@ export default function CasoDetallePage() {
     notifiedNoAcne.current = noAcne.key;
     notify({ tone: 'warning', title: noAcne.title, message: noAcne.message });
   }, [noAcne, notify]);
+
+  // Lo que la verificación previa vio en las tomas graduadas (vitíligo, piel sana…): informativa.
+  const secondOpinion =
+    detail !== null && detail.aiVisible
+      ? describeSecondOpinion(detail.caseAnalysis?.views, catalogs?.shots?.definitions ?? [])
+      : null;
+  const notifiedSecond = useRef<string | null>(null);
+  useEffect(() => {
+    if (secondOpinion === null || notifiedSecond.current === secondOpinion.key) return;
+    notifiedSecond.current = secondOpinion.key;
+    notify({ tone: 'warning', title: secondOpinion.title, message: secondOpinion.message });
+  }, [secondOpinion, notify]);
 
   if (loading) return <Loading label="Abriendo la ficha del caso…" />;
   if (error !== null) return <ErrorState message={error.message} onRetry={() => void open()} />;
@@ -477,6 +498,7 @@ export default function CasoDetallePage() {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  <SecondOpinionAlert notice={secondOpinion} />
                   {noAcne !== null ? (
                     <Alert
                       tone="warning"
@@ -700,14 +722,13 @@ export default function CasoDetallePage() {
                 <p className="text-neutral-500">Sin diagnósticos todavía.</p>
               ) : (
                 diagnoses.map((diagnosis) => (
-                  <div
-                    key={diagnosis.id}
-                    className="flex items-center justify-between gap-2 rounded-md border border-neutral-200 px-3 py-2"
-                  >
-                    <StudyModeBadge mode={diagnosis.studyMode} />
-                    <span className="text-neutral-900">
-                      {igaLabel(catalogs, diagnosis.igaClass)}
-                    </span>
+                  <div key={diagnosis.id} className="space-y-2 rounded-md border border-neutral-200 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <StudyModeBadge mode={diagnosis.studyMode} />
+                      <span className="text-neutral-900">
+                        {igaLabel(catalogs, diagnosis.igaClass)}
+                      </span>
+                    </div>
                   </div>
                 ))
               )}

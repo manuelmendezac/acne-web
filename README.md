@@ -203,6 +203,12 @@ condición de tiempo de ejecución, que es además lo que la tesis tiene que des
 - **Las flechas de variación se juzgan por la dirección del indicador.** En TRM una bajada es
   buena; en TPD, TSP y TCAD lo bueno es subir. Colorear por el signo del cambio pintaría de rojo
   el resultado principal de OE1.
+- **La verificación previa avisa, no decide.** Si la segunda opinión del motor ve otra condición
+  (vitíligo, melasma…), `SecondOpinionAlert` muestra un recuadro ámbar «Verificación previa: posible
+  vitíligo, no acné» con cada toma y la explicación, y la matriz etiqueta la fila («Verificación:
+  Vitíligo»; «… según la verificación previa: no se graduó»). Las tomas de piel sana apartadas
+  porque otra muestra acné aparecen como «Descartada». Nada de esto bloquea: el especialista
+  registra siempre el diagnóstico.
 - **Las imágenes no pasan por `next/image`.** El optimizador cachearía fotogramas descifrados
   fuera de la ruta auditada, que es justo lo que prohíbe el cifrado en reposo de RNF-02.
 
@@ -218,7 +224,7 @@ src/
 │  ├─ login/                Autenticación
 │  ├─ captura/[token]/      Panel móvil de fotografías, abierto por QR (sin sesión)
 │  ├─ portal/               Portal del dermatólogo
-│  │  ├─ casos/nuevo/       Asistente de ingreso: paciente → anamnesis → fotos → resumen
+│  │  ├─ casos/nuevo/       Ingreso por pasos: paciente → anamnesis → fotografías → análisis → cierre
 │  │  ├─ pacientes/[id]/    Historia clínica longitudinal y curva de evolución IGA
 │  │  ├─ casos/[id]/        Ficha de caso: pretest y postest
 │  │  ├─ indicadores/       TRM · TPD · TSP · TCAD + boxplots + matriz de confusión
@@ -267,6 +273,20 @@ valores atípicos como puntos individuales (RF-OE4-04).
 
 Toda tanda de cambios actualiza [`../acne-infra/TRACEABILITY.md`](../acne-infra/TRACEABILITY.md) y
 este `CHANGELOG.md`.
+
+## Nuevo caso
+
+`/<portal>/casos/nuevo` (`src/screens/casos-nuevo.tsx`) es una sola página con pasos numerados
+—Paciente, Anamnesis, Fotografías, Análisis y Cierre— y una barra lateral que marca los completos y
+enlaza a cada uno. El paciente se da de alta o se elige con un **buscador desplegable** que filtra
+desde la primera letra, sin tildes ni mayúsculas, y se maneja con ↑/↓/Enter/Esc; el filtrado se hace
+también en el cliente para que nunca se vean resultados de la búsqueda anterior. El consentimiento
+informado tiene su propio recuadro y la anamnesis se presenta en bloques por sección.
+
+El paso de **Fotografías clínicas** (`capture-qr-panel.tsx`) es un tablero con una ficha por toma
+obligatoria: se puede arrastrar y soltar una foto sobre la ficha, repetirla, cambiarle la vista,
+ampliarla a pantalla completa o quitarla con confirmación. Las tomas adicionales se pliegan, y al
+lado quedan las dos vías de carga: «Desde el teléfono» (QR) y «Desde este equipo».
 
 ## Captura de fotografías desde el móvil
 

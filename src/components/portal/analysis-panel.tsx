@@ -7,6 +7,7 @@ import { AiAssessment } from '@/components/portal/ai-assessment';
 import { AnamnesisMismatchAlert } from '@/components/portal/anamnesis-mismatch-alert';
 import { AnalysisProgress } from '@/components/portal/analysis-progress';
 import { CaseAnalysisMatrix } from '@/components/portal/case-analysis-matrix';
+import { SecondOpinionAlert } from '@/components/portal/second-opinion-alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { Alert } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
 import { describeNoAcne } from '@/lib/acne-verdict';
 import { api, type GetResult, type PostResult } from '@/lib/api';
+import { describeSecondOpinion } from '@/lib/second-opinion';
 import { num, pct } from '@/lib/format';
 import { listShotLabels, type ShotDefinitionLike } from '@/lib/shots';
 import { useAction, useApi, usePolledApi } from '@/lib/use-api';
@@ -125,6 +127,17 @@ export function AnalysisPanel({
   }, [noAcne, notify]);
   const noSuggestion = current?.verdict === 'no_acne';
 
+  // Lo que la verificación previa vio en las tomas que sí se graduaron: aviso, nunca bloqueo.
+  const secondOpinion = done
+    ? describeSecondOpinion(current?.views, catalogs?.shots.definitions ?? [])
+    : null;
+  const notifiedSecond = useRef<string | null>(null);
+  useEffect(() => {
+    if (secondOpinion === null || notifiedSecond.current === secondOpinion.key) return;
+    notifiedSecond.current = secondOpinion.key;
+    notify({ tone: 'warning', title: secondOpinion.title, message: secondOpinion.message });
+  }, [secondOpinion, notify]);
+
   // The mismatch between questionnaire and image is derived by the server from the finished
   // inference, so the case file is re-read once there is one.
   const detail = useApi<CaseDetail>(done ? `/cases/${caseId}` : null, undefined, [
@@ -224,6 +237,7 @@ export function AnalysisPanel({
         {done && current !== null ? (
           <div className="space-y-4">
             <AnamnesisMismatchAlert messages={mismatch} />
+            <SecondOpinionAlert notice={secondOpinion} />
             {noAcne !== null ? (
               <Alert tone="warning" title={noSuggestion ? 'Sin sugerencia del sistema' : noAcne.title}>
                 {noAcne.message}

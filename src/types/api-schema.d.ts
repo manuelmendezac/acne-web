@@ -710,7 +710,7 @@ export interface paths {
         put?: never;
         /**
          * Corrige la toma (vista) de una fotografía ya subida.
-         * @description Para rotular como perfil una foto que se subió como vista general sin volver a subirla. No toca los bytes ni afecta a inferencias o diagnósticos; solo la comprobación de tomas obligatorias lee la etiqueta.
+         * @description Para rotular como perfil una foto que se subió como vista general sin volver a subirla. No toca los bytes ni afecta a inferencias o diagnósticos; solo la comprobación de tomas obligatorias lee la etiqueta. Responde 422 si la orientación medida al subirla no corresponde a la toma nueva (p. ej. un rostro girado como «Vista general»).
          */
         post: operations["ImagesController_relabel"];
         delete?: never;
@@ -2273,6 +2273,19 @@ export interface components {
              */
             shotKey: "general" | "acercamiento" | "borde" | "perfil_derecho" | "perfil_izquierdo" | "pecho" | "espalda" | "otra";
         };
+        SecondOpinionDto: {
+            /**
+             * @description Qué muestra principalmente la imagen según la segunda opinión. `otra_condicion` y `piel_sana` merecen advertencia: la lectura IGA de esa toma puede no corresponder a acné.
+             * @enum {string}
+             */
+            label: "acne" | "piel_sana" | "otra_condicion" | "indeterminado";
+            /** @description Condiciones distintas del acné que nombró (vacía si ninguna). Texto del modelo. */
+            conditions: string[];
+            /** @description Una frase para el dermatólogo. */
+            explanation: string;
+            /** @description Modelo y revisión de la pregunta (RNF-03). */
+            version: string;
+        };
         AiInferenceMemberDto: {
             /** @description Etiqueta del miembro, p. ej. yolov8s-cls. */
             tag: string;
@@ -2302,8 +2315,15 @@ export interface components {
              * @enum {string}
              */
             verdict: "acne" | "piel_sana" | "no_acne";
+            /**
+             * @description Quién decidió `verdict`. `segunda_opinion`: la verificación previa vio otra condición (ver `secondOpinion`) en una toma que el filtro dejaba pasar como acné, y no se graduó.
+             * @enum {string}
+             */
+            verdictSource: "filtro" | "segunda_opinion";
             /** @description Probabilidad de acné según el filtro; nula si el motor no tenía filtro. */
             acneProbability: number | null;
+            /** @description Segunda opinión antes de graduar (informativa). Nula si no se consultó: desactivada, sin clave, fallida, o porque el filtro ya había detenido la imagen. */
+            secondOpinion: components["schemas"]["SecondOpinionDto"] | null;
             /** @enum {string|null} */
             igaClass: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo" | null;
             confidence: number | null;
@@ -2392,8 +2412,10 @@ export interface components {
              * @enum {string|null}
              */
             verdict: "acne" | "piel_sana" | "no_acne" | null;
-            /** @description imageId de las tomas que el filtro declaró «otra condición». Quedan fuera de la sugerencia del caso. Las tomas de piel sana SÍ participan, como `sin_lesiones`. */
+            /** @description imageId de las tomas declaradas «otra condición» —por el filtro local o por la verificación previa (`verdictSource`)—. No se graduaron y quedan fuera de la sugerencia del caso. */
             noAcneViews: string[];
+            /** @description imageId de las tomas que el filtro declaró «piel sana» y que se descartaron de la sugerencia porque otra toma sí muestra acné: su `sin_lesiones` lleva la probabilidad del filtro, no un grado, y no debe competir con las lesiones de la otra mejilla. Vacío cuando ninguna toma muestra acné: entonces las tomas sanas sostienen la sugerencia (`piel_sana`). */
+            healthyViewsSetAside: string[];
             /** @description Tomas con inferencia terminada con éxito. */
             completed: number;
             /** @description Tomas con inferencia pendiente o en ejecución. */
@@ -2558,6 +2580,8 @@ export interface components {
             reviewMinutes: number | null;
         };
         Anexo5RowDto: {
+            /** @description Id del diagnóstico de la fila; lo usa la corrección del administrador. */
+            diagnosisId: string;
             number: number;
             date: string;
             caseCode: string;

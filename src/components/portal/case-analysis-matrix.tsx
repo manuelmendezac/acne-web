@@ -2,12 +2,19 @@ import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { pct } from '@/lib/format';
+import { findingFor } from '@/lib/second-opinion';
 import { igaLabel, type Catalogs } from '@/lib/use-catalogs';
 import type { components } from '@/types/api-schema';
 
 type CaseAnalysis = components['schemas']['CaseAnalysisDto'];
 type View = components['schemas']['CaseAnalysisViewDto'];
 type Agreement = 'unanime' | 'mayoria' | 'discrepancia';
+
+/** What the second opinion saw in this view, in a few words, when it is not plain acne. */
+function secondOpinionOf(view: View): string | null {
+  const finding = findingFor(view, []);
+  return finding === null ? null : finding.headline;
+}
 
 const AGREEMENT: Record<Agreement, { label: string; variant: 'success' | 'warning' | 'danger' }> = {
   unanime: { label: 'Unanimidad', variant: 'success' },
@@ -177,10 +184,17 @@ export function CaseAnalysisMatrix({
                         decide
                       </span>
                     ) : null}
+                    {secondOpinionOf(view) !== null ? (
+                      <span className="mt-1 block w-fit rounded bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-300">
+                        Verificación: {secondOpinionOf(view)}
+                      </span>
+                    ) : null}
                   </td>
                   {view.inference.verdict === 'no_acne' ? (
                     <td colSpan={memberTags.length + 1} className="py-1.5 pr-3 text-amber-700">
-                      Otra condición según el filtro: no se graduó
+                      {view.inference.verdictSource === 'segunda_opinion'
+                        ? `${secondOpinionOf(view) ?? 'Otra condición'} según la verificación previa: no se graduó`
+                        : 'Otra condición según el filtro: no se graduó'}
                       {view.inference.acneProbability !== null ? (
                         <span className="block text-xs tabular-nums text-neutral-500">
                           Probabilidad de acné {pct(view.inference.acneProbability * 100)}
@@ -213,7 +227,18 @@ export function CaseAnalysisMatrix({
                       </td>
                     );
                   })}
-                  {view.inference.verdict === 'no_acne' ? null : (
+                  {view.inference.verdict === 'no_acne' ? null : analysis.healthyViewsSetAside.includes(
+                      view.imageId,
+                    ) ? (
+                    /* Piel sana junto a una toma con acné: su «sin lesiones» lleva la probabilidad
+                       del filtro, no un grado, y no compite con las lesiones de la otra mejilla. */
+                    <td className="py-1.5 pr-3 text-neutral-500">
+                      <span className="block font-medium">Descartada</span>
+                      <span className="block text-xs">
+                        Otra toma muestra acné; esta no participa de la sugerencia.
+                      </span>
+                    </td>
+                  ) : (
                     <td className="py-1.5 pr-3 font-semibold">
                       {cell(
                         view,

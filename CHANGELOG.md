@@ -5,6 +5,63 @@ versionado con [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Added — verificación previa en el análisis (22/10/2026)
+
+- **`SecondOpinionAlert`** (`src/components/portal/second-opinion-alert.tsx`) y
+  `src/lib/second-opinion.ts` (`describeSecondOpinion`, `findingFor`): recuadro ámbar
+  «Verificación previa: posible vitíligo, no acné» con cada toma, lo que vio la segunda opinión y su
+  explicación, más un aviso emergente una vez por resultado. Aparece en el panel de análisis del
+  ingreso y en la ficha del dermatólogo (solo si la evaluación asistida es visible). Avisa, nunca
+  bloquea: el especialista registra siempre el diagnóstico.
+- `CaseAnalysisMatrix`: etiqueta «Verificación: Vitíligo» en la fila de la toma; una toma que la
+  verificación previa detuvo dice «Vitíligo según la verificación previa: no se graduó»
+  (`verdictSource = segunda_opinion`). `describeNoAcne` deja fuera esas tomas para no repetir el
+  aviso.
+- **Fila «Descartada»** en la matriz para las tomas de piel sana apartadas de la sugerencia porque
+  otra toma muestra acné (`healthyViewsSetAside`): «Otra toma muestra acné; esta no participa de la
+  sugerencia». No es una incongruencia y no genera aviso.
+- `src/types/api-schema.d.ts` regenerado (`secondOpinion`, `verdictSource`, `healthyViewsSetAside`).
+
+### Changed — Nuevo caso por pasos y tablero de Fotografías clínicas (22/10/2026)
+
+- **Nuevo caso** (`src/screens/casos-nuevo.tsx`) rediseñado: pasos numerados (Paciente →
+  Anamnesis → Fotografías → Análisis → Cierre) con barra lateral de progreso enlazada a cada paso;
+  pestañas «Paciente nuevo / Paciente registrado»; consentimiento informado en un recuadro propio;
+  «Datos del estudio» (patrón de consenso IGA); anamnesis en bloques por sección con barra de
+  progreso (`anamnesis-form.tsx`); cierre con resumen.
+- **Buscador de pacientes** como lista desplegable (`role="combobox"`) que filtra desde la primera
+  letra sin distinguir tildes ni mayúsculas, con teclado (↑/↓/Enter/Esc) y tarjeta del paciente
+  elegido con «Cambiar».
+- **Fotografías clínicas** (`capture-qr-panel.tsx`): tablero con una ficha por toma obligatoria
+  (silueta de la vista cuando está vacía), arrastrar y soltar sobre la ficha, «Repetir», selector de
+  vista, ampliar a pantalla completa y quitar con confirmación; tomas adicionales plegables; «Otras
+  fotografías» para repetidas o sin vista; columnas «Desde el teléfono» (QR con cuenta regresiva) y
+  «Desde este equipo».
+- Textos de ayuda sin códigos de la tesis: el nombre «se guarda cifrado; solo el personal autorizado
+  lo ve» y el fototipo se explica (I muy clara … VI muy oscura), en lugar de «AES-256-GCM (RF-TR-03)»
+  y «sección 8.2» (`patient-fields.tsx`).
+
+### Fixed — buscador y alerta de tomas faltantes (22/10/2026)
+
+- El buscador de pacientes mostraba los resultados de la búsqueda anterior mientras llegaba la
+  respuesta del servidor. Ahora también filtra en el cliente, con la misma regla que la API, de modo
+  que la lista nunca muestra pacientes que no coinciden con lo escrito.
+- La alerta de tomas obligatorias faltantes aparecía antes de que se cargaran las fotografías del
+  caso; ahora espera a la primera carga.
+- Pruebas: `second-opinion.test.ts`, `acne-verdict.test.ts` y `case-analysis-matrix.test.tsx`.
+  Total: **98** pruebas (vitest).
+
+### Added — avisos del filtro de acné (13/10/2026)
+
+- `src/lib/acne-verdict.ts` (`describeNoAcne`) y `src/components/ui/toast.tsx` (`ToastProvider`):
+  cuando el filtro declara una toma «otra condición», aviso flotante una vez por resultado y nota fija
+  en el panel; si ninguna toma es graduable, «Sin sugerencia del sistema». Nunca bloquea el
+  diagnóstico.
+- Matriz de análisis: filas «Otra condición según el filtro: no se graduó» y «Piel sana según el
+  filtro (los modelos IGA no se ejecutaron)».
+- Avisos de la vista al subir fotografías (rechazos 422 y advertencias de orientación) en el panel de
+  captura.
+
 ### Changed — Dermatrix: sin vía del paciente y rediseño del portal (19/10/2026)
 
 - **El paciente ya no opera el sistema.** Se retiran la presentación de `/` (dos puertas: personal

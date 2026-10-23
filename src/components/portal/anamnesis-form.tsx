@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { CheckboxGroup, Input, RadioGroup, Textarea } from '@/components/ui/field';
 import { Alert } from '@/components/ui/feedback';
 import { date } from '@/lib/format';
@@ -101,17 +100,42 @@ export function AnamnesisForm({
         </Alert>
       ) : null}
 
+      {questions.length > 0 ? (
+        <div className="flex items-center gap-3">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-100">
+            <div
+              className="h-full rounded-full bg-purple-900 transition-all"
+              style={{ width: `${Math.round((answered / questions.length) * 100)}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-xs font-medium text-neutral-500">
+            {answered} de {questions.length} respondidas
+          </span>
+        </div>
+      ) : null}
+
+      {/* Sections are groups inside the step's card, not cards of their own: a card per section
+          nested in the intake's card read as boxes inside boxes. */}
       {sections.map(([section, sectionQuestions]) => (
-        <Card key={section}>
-          <CardHeader
-            title={catalogs?.anamnesis.sectionLabels[section] ?? section}
-            action={
-              section === 'hormonal' ? (
-                <Badge variant="outline">solo mujeres desde 18 años</Badge>
-              ) : null
-            }
-          />
-          <CardBody className="space-y-5">
+        <fieldset key={section} className="overflow-hidden rounded-lg border border-neutral-200">
+          <legend className="sr-only">{catalogs?.anamnesis.sectionLabels[section] ?? section}</legend>
+          <div
+            aria-hidden
+            className="flex items-center justify-between gap-3 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5"
+          >
+            <p className="text-sm font-semibold text-neutral-900">
+              {catalogs?.anamnesis.sectionLabels[section] ?? section}
+            </p>
+            {section === 'hormonal' ? (
+              <Badge variant="outline">solo mujeres desde 18 años</Badge>
+            ) : (
+              <span className="text-xs text-neutral-500">
+                {sectionQuestions.filter((q) => isAnswered(answers[q.key])).length} de{' '}
+                {sectionQuestions.length}
+              </span>
+            )}
+          </div>
+          <div className="divide-y divide-neutral-100">
             {sectionQuestions.map((question) => (
               <QuestionField
                 key={question.key}
@@ -122,13 +146,13 @@ export function AnamnesisForm({
                 disabled={disabled}
               />
             ))}
-          </CardBody>
-        </Card>
+          </div>
+        </fieldset>
       ))}
 
-      <p className="text-sm text-neutral-500">
-        {answered} de {questions.length} preguntas respondidas. Ninguna es obligatoria: dejar una en
-        blanco significa «no se preguntó o no lo sabe», que no es lo mismo que responder «no».
+      <p className="text-xs text-neutral-500">
+        Dejar una pregunta en blanco significa «no se preguntó o no lo sabe», que no es lo mismo que
+        responder «no».
       </p>
     </div>
   );
@@ -153,11 +177,14 @@ function QuestionField({
     question.detail !== undefined && answer.value !== null && answer.value !== false;
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm font-medium text-neutral-900">
-        <span className="mr-1.5 text-neutral-500">{question.number}.</span>
-        {question.text}
+    <div className="space-y-2 px-4 py-4">
+      <p className="flex gap-2 text-sm font-medium text-neutral-900">
+        <span className="w-5 shrink-0 text-right tabular-nums text-neutral-400">
+          {question.number}.
+        </span>
+        <span>{question.text}</span>
       </p>
+      <div className="space-y-2 pl-7">
 
       {question.type === 'booleano' ? (
         <RadioGroup
@@ -242,6 +269,7 @@ function QuestionField({
       {question.hint !== undefined ? (
         <p className="text-xs text-neutral-500">{question.hint}</p>
       ) : null}
+      </div>
     </div>
   );
 }

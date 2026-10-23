@@ -5,15 +5,21 @@ import { shotLabel, type ShotDefinitionLike } from '@/lib/shots';
  *
  * The engine's gate sorts each photograph into acne (graded), healthy skin (answered as «sin
  * lesiones»; freckles included) or another condition —vitiligo, psoriasis, rosacea…—, which is not
- * graded. Only the last one is reported here. If no view is gradable the case has no suggestion at
- * all, an incongruence with a case opened for acne: worth a warning, never a block (the specialist
- * still diagnoses).
+ * graded. Only the last one is reported here. A healthy view next to a graded one is simply set
+ * aside by the API (`healthyViewsSetAside`) and the matrix says so on its row; it is not an
+ * incongruence. If no view is gradable the case has no suggestion at all, an incongruence with a
+ * case opened for acne: worth a warning, never a block (the specialist still diagnoses).
  */
 
 export interface NoAcneAnalysisLike {
   verdict: 'acne' | 'piel_sana' | 'no_acne' | null;
   noAcneViews: readonly string[];
-  views: ReadonlyArray<{ imageId: string; shotKey: string | null }>;
+  views: ReadonlyArray<{
+    imageId: string;
+    shotKey: string | null;
+    /** Who stopped the view; `segunda_opinion` views are explained by `describeSecondOpinion`. */
+    inference?: { verdictSource?: 'filtro' | 'segunda_opinion' };
+  }>;
 }
 
 export interface NoAcneNotice {
@@ -31,9 +37,19 @@ export function describeNoAcne(
 ): NoAcneNotice | null {
   if (analysis === null || analysis.noAcneViews.length === 0) return null;
 
-  const flagged = analysis.views.filter((view) => analysis.noAcneViews.includes(view.imageId));
+  // Views stopped by the second opinion carry their own, more specific warning (what it saw and
+  // why); saying it twice would bury it.
+  const flagged = analysis.views.filter(
+    (view) =>
+      analysis.noAcneViews.includes(view.imageId) &&
+      view.inference?.verdictSource !== 'segunda_opinion',
+  );
+  if (flagged.length === 0) return null;
   const labels = flagged.map((view) => `«${shotLabel(shots, view.shotKey)}»`).join(', ');
-  const key = [...analysis.noAcneViews].sort().join('|');
+  const key = flagged
+    .map((view) => view.imageId)
+    .sort()
+    .join('|');
 
   if (analysis.verdict === 'no_acne') {
     return {

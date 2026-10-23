@@ -43,6 +43,25 @@ type TabKey = (typeof TABS)[number]["key"];
  * RF-OE4-01), so what the researcher transcribes into the thesis annexes is what the system
  * shows, field for field.
  */
+/** Un CSV de postest por objetivo: OE1 tiempos, OE2 diagnósticos, OE3 encuestas, OE4 jornadas. */
+const POSTEST_EXPORTS = [
+  { dataset: "tiempos", file: "OE1-tiempos-revision-postest.csv" },
+  { dataset: "diagnosticos", file: "OE2-precision-diagnostica-postest.csv" },
+  { dataset: "encuestas", file: "OE3-satisfaccion-postest.csv" },
+  { dataset: "jornadas", file: "OE4-capacidad-atencion-postest.csv" },
+] as const;
+
+async function exportPostest(includeSynthetic: boolean): Promise<void> {
+  for (const { dataset, file } of POSTEST_EXPORTS) {
+    await api.download(
+      `/stats/dataset-export?dataset=${dataset}&mode=postest&includeSynthetic=${includeSynthetic}`,
+      file,
+    );
+    // Los navegadores descartan descargas encadenadas sin pausa.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+}
+
 export default function AnexosPage() {
   const [tab, setTab] = useState<TabKey>("anexo-4");
   const [studyMode, setStudyMode] = useState("");
@@ -70,19 +89,29 @@ export default function AnexosPage() {
         title="Instrumentos digitalizados"
         description="Las fichas de registro de los Anexos 4, 5 y 7, con los mismos campos del instrumento en papel."
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              void api.download(
-                `/stats/dataset-export?dataset=mediciones&includeSynthetic=${includeSynthetic}`,
-                "dataset-mediciones.csv",
-              )
-            }
-          >
-            <Download className="h-4 w-4" aria-hidden />
-            Exportar CSV
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void exportPostest(includeSynthetic)}
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              Exportar postest (OE1–OE4)
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                void api.download(
+                  `/stats/dataset-export?dataset=mediciones&includeSynthetic=${includeSynthetic}`,
+                  "dataset-mediciones.csv",
+                )
+              }
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              Exportar CSV
+            </Button>
+          </div>
         }
       />
 

@@ -61,7 +61,7 @@ export function PatientFields({
           error={nameError}
           value={values.fullName}
           onChange={(event) => set('fullName', event.target.value)}
-          hint="Se cifra con AES-256-GCM antes de tocar la base de datos (RF-TR-03)."
+          hint="Se guarda cifrado; solo el personal autorizado lo ve."
         />
       ) : null}
 
@@ -120,7 +120,7 @@ export function PatientFields({
           </Select>
         </Field>
 
-        <Field label="Fototipo Fitzpatrick" hint="Alimenta la auditoría de equidad (sección 8.2).">
+        <Field label="Fototipo Fitzpatrick" hint="Tipo de piel, del I (muy clara) al VI (muy oscura).">
           <Select
             value={values.fitzpatrick}
             onChange={(event) => set('fitzpatrick', event.target.value)}

@@ -86,6 +86,7 @@ const analysis = {
       ]),
     },
   ],
+  healthyViewsSetAside: [],
 } as unknown as CaseAnalysis;
 
 describe('CaseAnalysisMatrix', () => {
