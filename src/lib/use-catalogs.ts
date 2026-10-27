@@ -33,6 +33,12 @@ export interface Catalogs {
   sexes: string[];
   studyModes: { values: string[]; labels: Record<string, string> };
   caseStatuses: { values: string[]; labels: Record<string, string> };
+  /** What the staff sees: Borrador, En revisión, Revisado — each grouping internal statuses. */
+  caseStages: {
+    values: string[];
+    labels: Record<string, string>;
+    ofStatus: Record<string, string>;
+  };
   workShifts: { values: string[]; labels: Record<string, string> };
   roles: {
     values: string[];

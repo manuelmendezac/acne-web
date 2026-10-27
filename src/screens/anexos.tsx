@@ -43,18 +43,21 @@ type TabKey = (typeof TABS)[number]["key"];
  * RF-OE4-01), so what the researcher transcribes into the thesis annexes is what the system
  * shows, field for field.
  */
-/** Un CSV de postest por objetivo: OE1 tiempos, OE2 diagnósticos, OE3 encuestas, OE4 jornadas. */
+/**
+ * Un archivo de postest por objetivo: OE1 tiempos, OE2 diagnósticos, OE3 encuestas, OE4 jornadas.
+ * OE1 sale como la ficha del Anexo 4 en Excel (t₀, t₁, TR, fuente); el resto, en CSV.
+ */
 const POSTEST_EXPORTS = [
-  { dataset: "tiempos", file: "OE1-tiempos-revision-postest.csv" },
-  { dataset: "diagnosticos", file: "OE2-precision-diagnostica-postest.csv" },
-  { dataset: "encuestas", file: "OE3-satisfaccion-postest.csv" },
-  { dataset: "jornadas", file: "OE4-capacidad-atencion-postest.csv" },
+  { dataset: "tiempos", format: "xlsx", file: "OE1-tiempos-revision-postest.xlsx" },
+  { dataset: "diagnosticos", format: "csv", file: "OE2-precision-diagnostica-postest.csv" },
+  { dataset: "encuestas", format: "csv", file: "OE3-satisfaccion-postest.csv" },
+  { dataset: "jornadas", format: "csv", file: "OE4-capacidad-atencion-postest.csv" },
 ] as const;
 
 async function exportPostest(includeSynthetic: boolean): Promise<void> {
-  for (const { dataset, file } of POSTEST_EXPORTS) {
+  for (const { dataset, format, file } of POSTEST_EXPORTS) {
     await api.download(
-      `/stats/dataset-export?dataset=${dataset}&mode=postest&includeSynthetic=${includeSynthetic}`,
+      `/stats/dataset-export?dataset=${dataset}&mode=postest&format=${format}&includeSynthetic=${includeSynthetic}`,
       file,
     );
     // Los navegadores descartan descargas encadenadas sin pausa.
@@ -141,6 +144,21 @@ export default function AnexosPage() {
           title={TABS.find((item) => item.key === tab)?.label ?? ""}
           action={
             <div className="flex flex-wrap items-center gap-3">
+              {tab === "anexo-4" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    void api.download(
+                      `/stats/dataset-export?dataset=tiempos&format=xlsx&includeSynthetic=${includeSynthetic}${studyMode === "" ? "" : `&mode=${studyMode}`}`,
+                      `anexo4-tiempos${studyMode === "" ? "" : `-${studyMode}`}.xlsx`,
+                    )
+                  }
+                >
+                  <Download className="h-4 w-4" aria-hidden />
+                  Ficha Excel
+                </Button>
+              ) : null}
               <Select
                 value={studyMode}
                 onChange={(event) => setStudyMode(event.target.value)}

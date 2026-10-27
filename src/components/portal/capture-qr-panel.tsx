@@ -224,7 +224,7 @@ export function CaptureQrPanel({
               <span className="block text-xs text-neutral-500">
                 {complete
                   ? 'El caso tiene la vista general y los dos perfiles.'
-                  : 'Vista general y ambos perfiles; sin ellas el caso no se puede analizar.'}
+                  : 'Vista general y ambos perfiles, del mismo paciente; sin ellas el caso no se puede analizar.'}
               </span>
             </p>
           </div>

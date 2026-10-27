@@ -1046,6 +1046,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/diagnoses/{id}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Corrige la clase IGA de un diagnóstico (solo administrador, con motivo).
+         * @description Corrección de un error de captura. Conserva la clase original, quién corrigió, cuándo y por qué, y recalcula el acuerdo contra el patrón de referencia. No modifica la lectura de la IA.
+         */
+        post: operations["DiagnosesController_correct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/diagnoses/anexo-5": {
         parameters: {
             query?: never;
@@ -1090,6 +1110,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cases/assignees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Personas a las que se puede asignar un caso (cuentas activas). */
+        get: operations["CasesController_assignees"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cases/{id}": {
         parameters: {
             query?: never;
@@ -1107,7 +1144,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Actualiza el patrón de consenso o la asignación del caso. */
+        /**
+         * Corrige el caso: paciente, profesional asignado, notas y patrón de consenso.
+         * @description Cualquier rol corrige el paciente, el profesional asignado y las notas. El patrón de consenso es la etiqueta de referencia del estudio y sigue reservado a quien diagnostica y al administrador (403 para el resto). Un caso anulado no admite cambios (400).
+         */
         patch: operations["CasesController_update"];
         trace?: never;
     };
@@ -1202,6 +1242,26 @@ export interface paths {
          * @description Estado FINAL que no es un éxito. La medición se cierra normalmente —el especialista sí dedicó ese tiempo— pero el caso no produce un diagnóstico comparable, de modo que queda fuera de TPD y no cuenta como caso resuelto para TCAD.
          */
         post: operations["CasesController_refer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cases/{id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quita el caso: lo borra si no tiene evidencia del estudio, lo anula si la tiene.
+         * @description Sin diagnóstico, cronometraje de revisión, inferencia ni receta, el caso se BORRA con sus fotos y su anamnesis. Con cualquiera de ellos se ANULA: sale de la bandeja, los indicadores, los contrastes y las exportaciones, y la fila queda con quién, cuándo y por qué. El motivo es obligatorio. `GET /cases/:id` adelanta cuál de los dos ocurrirá (`removal`).
+         */
+        post: operations["CasesController_remove"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2322,7 +2382,7 @@ export interface components {
             verdictSource: "filtro" | "segunda_opinion";
             /** @description Probabilidad de acné según el filtro; nula si el motor no tenía filtro. */
             acneProbability: number | null;
-            /** @description Segunda opinión antes de graduar (informativa). Nula si no se consultó: desactivada, sin clave, fallida, o porque el filtro ya había detenido la imagen. */
+            /** @description Segunda opinión antes de graduar. Si vio otra condición, la toma no se graduó (`verdictSource = segunda_opinion`); si no, es una advertencia. Nula si no se consultó: desactivada, sin clave, fallida, o porque el filtro ya había detenido la imagen. */
             secondOpinion: components["schemas"]["SecondOpinionDto"] | null;
             /** @enum {string|null} */
             igaClass: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo" | null;
@@ -2576,8 +2636,21 @@ export interface components {
             internalNotes: string | null;
             notes: string | null;
             createdAt: string;
+            /**
+             * @description Clase emitida antes de la corrección del administrador; nulo si nunca se corrigió.
+             * @enum {string|null}
+             */
+            originalIgaClass: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo" | null;
+            correctionReason: string | null;
+            correctedAt: string | null;
             /** @description TRᵢ del caso en minutos, congelado al enviar el diagnóstico (OE1). */
             reviewMinutes: number | null;
+        };
+        CorrectDiagnosisDto: {
+            /** @enum {string} */
+            igaClass: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo";
+            /** @description Qué se registró mal y con qué evidencia se corrige. Queda en la fila y en la auditoría. */
+            reason: string;
         };
         Anexo5RowDto: {
             /** @description Id del diagnóstico de la fila; lo usa la corrección del administrador. */
@@ -2616,6 +2689,15 @@ export interface components {
             professional: string;
             isSynthetic: boolean;
         };
+        CaseRemovalDto: {
+            /**
+             * @description `eliminar`: el caso aún no tiene evidencia del estudio y se borra con sus fotos. `anular`: ya la tiene; sale de la bandeja, los indicadores y las exportaciones, y la fila queda.
+             * @enum {string}
+             */
+            mode: "eliminar" | "anular";
+            /** @description La evidencia que obliga a anular, en palabras. */
+            evidence: string[];
+        };
         CaseSummaryDto: {
             id: string;
             caseCode: string;
@@ -2631,12 +2713,23 @@ export interface components {
             returnReason: string | null;
             /** @enum {string} */
             status: "borrador" | "en_revision" | "procesado_ia" | "solicitar_fotos" | "derivar_presencial" | "diagnosticado" | "cerrado";
+            /**
+             * @description Lo que ve el personal: Borrador, En revisión o Revisado (agrupa `status`).
+             * @enum {string}
+             */
+            stage: "borrador" | "en_revision" | "revisado";
             /** @enum {string|null} */
             groundTruthIga: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo" | null;
             isSynthetic: boolean;
             imageCount: number;
             createdAt: string;
             closedAt: string | null;
+            notes: string | null;
+            /** @description Cuándo se anuló. Un caso anulado no admite cambios ni cuenta en el estudio. */
+            voidedAt: string | null;
+            voidReason: string | null;
+            /** @description Qué pasaría al quitar el caso: borrarlo o anularlo. Lo llena la bandeja (`GET /cases`) y la ficha; null en las demás respuestas. */
+            removal: components["schemas"]["CaseRemovalDto"] | null;
         };
         CreateCaseDto: {
             patientId: string;
@@ -2650,6 +2743,11 @@ export interface components {
             notes?: string;
             /** @description Marca el caso como dato de demostración. Se excluye de la evidencia de la tesis. */
             isSynthetic?: boolean;
+        };
+        CaseAssigneeDto: {
+            id: string;
+            fullName: string;
+            role: string;
         };
         CaseTimingDto: {
             id: string;
@@ -2678,12 +2776,23 @@ export interface components {
             returnReason: string | null;
             /** @enum {string} */
             status: "borrador" | "en_revision" | "procesado_ia" | "solicitar_fotos" | "derivar_presencial" | "diagnosticado" | "cerrado";
+            /**
+             * @description Lo que ve el personal: Borrador, En revisión o Revisado (agrupa `status`).
+             * @enum {string}
+             */
+            stage: "borrador" | "en_revision" | "revisado";
             /** @enum {string|null} */
             groundTruthIga: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo" | null;
             isSynthetic: boolean;
             imageCount: number;
             createdAt: string;
             closedAt: string | null;
+            notes: string | null;
+            /** @description Cuándo se anuló. Un caso anulado no admite cambios ni cuenta en el estudio. */
+            voidedAt: string | null;
+            voidReason: string | null;
+            /** @description Qué pasaría al quitar el caso: borrarlo o anularlo. Lo llena la bandeja (`GET /cases`) y la ficha; null en las demás respuestas. */
+            removal: components["schemas"]["CaseRemovalDto"] | null;
             images: components["schemas"]["CaseImageDto"][];
             /** @description Sugerencia de la CNN. SIEMPRE null cuando el solicitante opera en modo pretest (RF-TR-01). */
             inference: components["schemas"]["AiInferenceDto"] | null;
@@ -2703,10 +2812,29 @@ export interface components {
             reason: string;
         };
         UpdateCaseDto: {
-            /** @enum {string} */
+            /**
+             * @description Patrón de consenso. Solo quien diagnostica y el administrador pueden cambiarlo.
+             * @enum {string}
+             */
             groundTruthIga?: "sin_lesiones" | "casi_sin_lesiones" | "leve" | "moderado" | "severo";
+            /** @description Paciente del caso, para corregir uno elegido por error. Se rechaza si el caso ya tiene diagnóstico o receta: ambos se emitieron para el paciente anterior. */
+            patientId?: string;
+            /** @description Profesional asignado. */
             assignedUserId?: string;
             notes?: string;
+        };
+        RemoveCaseDto: {
+            reason: string;
+        };
+        CaseRemovalResultDto: {
+            /**
+             * @description `eliminar`: el caso aún no tiene evidencia del estudio y se borra con sus fotos. `anular`: ya la tiene; sale de la bandeja, los indicadores y las exportaciones, y la fila queda.
+             * @enum {string}
+             */
+            mode: "eliminar" | "anular";
+            /** @description La evidencia que obliga a anular, en palabras. */
+            evidence: string[];
+            caseCode: string;
         };
         CreateCaptureSessionDto: {
             /** @description Caso al que se atarán las fotografías. */
@@ -4494,6 +4622,31 @@ export interface operations {
             };
         };
     };
+    DiagnosesController_correct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectDiagnosisDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosisDto"];
+                };
+            };
+        };
+    };
     DiagnosesController_anexo5: {
         parameters: {
             query?: {
@@ -4527,6 +4680,8 @@ export interface operations {
                 pending?: boolean;
                 /** @description Busca por código de caso, código de paciente o nombre del paciente. */
                 search?: string;
+                /** @description Etapa visible (Borrador, En revisión, Revisado); agrupa varios `status`. */
+                stage?: "borrador" | "en_revision" | "revisado";
             };
             header?: never;
             path?: never;
@@ -4563,6 +4718,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaseSummaryDto"];
+                };
+            };
+        };
+    };
+    CasesController_assignees: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseAssigneeDto"][];
                 };
             };
         };
@@ -4722,6 +4896,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaseDetailDto"];
+                };
+            };
+        };
+    };
+    CasesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemoveCaseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRemovalResultDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRemovalResultDto"];
                 };
             };
         };
@@ -5120,6 +5327,8 @@ export interface operations {
             query?: {
                 dataset?: "mediciones" | "tiempos" | "diagnosticos" | "jornadas" | "encuestas" | "anamnesis";
                 includeSynthetic?: boolean;
+                /** @description Solo tiempos, diagnosticos, jornadas y encuestas. Sin valor, entrega ambas condiciones. */
+                mode?: "pretest" | "postest";
             };
             header?: never;
             path?: never;

@@ -11,6 +11,7 @@ import { AnalysisProgress } from '@/components/portal/analysis-progress';
 import { CaseAnalysisMatrix } from '@/components/portal/case-analysis-matrix';
 import { SecondOpinionAlert } from '@/components/portal/second-opinion-alert';
 import { AnamnesisSummary } from '@/components/portal/anamnesis-summary';
+import { CaseAdminActions } from '@/components/portal/case-admin-actions';
 import { CaseBranchActions } from '@/components/portal/case-branch-actions';
 import {
   CaseHeader,
@@ -24,6 +25,7 @@ import { PrescriptionPanel } from '@/components/portal/prescription-panel';
 import { useSession } from '@/components/session-provider';
 import { Badge, StudyModeBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Alert, ErrorState, Loading, StudyModeBlocked } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
@@ -163,6 +165,12 @@ export default function CasoDetallePage() {
   );
   const prescriptions = useApi<CasePrescription[]>(`/prescriptions/case/${caseId}`);
 
+  /** Borrador, En revisión o Revisado: la etapa que ve el personal, no el estado interno. */
+  const stageLabel = (status: string): string => {
+    const stage = catalogs?.caseStages.ofStatus[status];
+    return stage === undefined ? status : (catalogs?.caseStages.labels[stage] ?? stage);
+  };
+
   /** Las visitas del paciente, de la más reciente a la más antigua. */
   const visits: VisitEntry[] = [...(history.data?.timeline ?? [])]
     .reverse()
@@ -171,7 +179,7 @@ export default function CasoDetallePage() {
       caseCode: entry.caseCode,
       createdAt: entry.createdAt,
       severityLabel: entry.severity === null ? null : igaLabel(catalogs, entry.severity),
-      statusLabel: catalogs?.caseStatuses.labels[entry.status] ?? entry.status,
+      statusLabel: stageLabel(entry.status),
     }));
 
   // Tomas que el filtro del motor declaró sin acné. Aviso flotante una vez por resultado (aquí,
@@ -283,7 +291,7 @@ export default function CasoDetallePage() {
 
       <CaseHeader
         caseCode={detail.caseCode}
-        statusLabel={catalogs?.caseStatuses.labels[detail.status] ?? detail.status}
+        statusLabel={stageLabel(detail.status)}
         patientName={detail.patientName}
         patientCode={detail.patientCode}
         ageYears={history.data?.patient.ageYears ?? null}
@@ -291,6 +299,13 @@ export default function CasoDetallePage() {
         phone={null}
         isSynthetic={detail.isSynthetic}
       />
+
+      {detail.voidedAt !== null ? (
+        <Alert tone="danger" title="Caso anulado">
+          Se anuló el {date(detail.voidedAt)}: {detail.voidReason ?? 'sin motivo registrado'}. No
+          cuenta en la bandeja, los indicadores ni las exportaciones, y no admite cambios.
+        </Alert>
+      ) : null}
 
       <CaseStats
         reviewMinutes={
@@ -336,6 +351,21 @@ export default function CasoDetallePage() {
               ) : null}
             </div>
           ) : null}
+        </Alert>
+      ) : null}
+
+      {/* A draft the desk left half-done (a reload, a closed tab): send it back to the intake. */}
+      {detail.status === 'borrador' && can('registrar_ingreso') ? (
+        <Alert tone="info" title="El ingreso de este caso sigue abierto">
+          Complete la anamnesis, las fotografías o el análisis desde la pantalla de ingreso.
+          <div className="mt-3">
+            <Link
+              href={href(`/casos/nuevo?caso=${detail.id}`)}
+              className={buttonVariants({ size: 'sm' })}
+            >
+              Continuar ingreso
+            </Link>
+          </div>
         </Alert>
       ) : null}
 
@@ -749,6 +779,15 @@ export default function CasoDetallePage() {
           </Card>
         </div>
       </div>
+
+      <CaseAdminActions
+        caseId={detail.id}
+        onChanged={() => void open()}
+        onRemoved={(result) => {
+          if (result.mode === 'eliminar') router.push(href('/casos'));
+          else void open();
+        }}
+      />
     </div>
   );
 }

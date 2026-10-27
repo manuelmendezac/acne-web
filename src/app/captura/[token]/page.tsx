@@ -144,7 +144,7 @@ export default function CapturaMovilPage() {
           title={`Faltan ${pendingRequired.length} fotografías obligatorias`}
         >
           {pendingRequired.map((shot) => shot.label).join(', ')}. Sin ellas el especialista no
-          puede evaluar el caso.
+          puede evaluar el caso. Todas deben ser del mismo paciente, con solo él en la foto.
         </Alert>
       ) : (
         <Alert tone="success" title="Fotografías obligatorias completas">

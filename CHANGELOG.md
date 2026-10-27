@@ -5,6 +5,31 @@ versionado con [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Changed — OE1 se descarga como ficha Excel (26/10/2026)
+
+- «Exportar postest (OE1–OE4)» baja OE1 como `OE1-tiempos-revision-postest.xlsx` (ficha del Anexo 4
+  con t₀ y t₁); OE2–OE4 siguen en CSV. La pestaña Anexo 4 suma «Ficha Excel», que respeta el filtro
+  de condición.
+
+### Changed — tres etapas de caso (25/10/2026)
+
+- La bandeja (insignia y filtro «Estado») y la ficha muestran la etapa (`caseStages`): Borrador, En
+  revisión o Revisado, en lugar de los siete estados internos.
+
+### Added — editar, eliminar o anular un caso; retomar un ingreso (25/10/2026)
+
+- **`CaseAdminActions`** (`src/components/portal/case-admin-actions.tsx`), en la ficha del caso y en
+  la pantalla de ingreso, para los tres roles:
+  - **Editar caso:** cambia el paciente (con búsqueda), el profesional asignado y las notas.
+  - **Eliminar caso** o **Anular caso**, según lo que diga la API (`removal`). La confirmación
+    explica antes de actuar si se borrará con sus fotos o si se anulará y por qué evidencia. El
+    motivo es obligatorio.
+- **Ficha:** muestra el aviso «Caso anulado» con la fecha y el motivo.
+- **Bandeja:** cada fila tiene «Eliminar» o «Anular» (según `removal`, que `GET /cases` ahora trae
+  por fila); la confirmación con el motivo se abre debajo de la fila.
+- **Ingreso retomable:** la pantalla de nuevo caso guarda el caso en la dirección (`?caso=<id>`) y lo
+  recupera al recargar. La bandeja y la ficha ofrecen «Continuar ingreso» para los borradores.
+
 ### Added — verificación previa en el análisis (22/10/2026)
 
 - **`SecondOpinionAlert`** (`src/components/portal/second-opinion-alert.tsx`) y

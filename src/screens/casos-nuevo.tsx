@@ -13,11 +13,12 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
 import { AnamnesisForm, type AnamnesisAnswers } from '@/components/portal/anamnesis-form';
 import { AnalysisPanel } from '@/components/portal/analysis-panel';
+import { CaseAdminActions } from '@/components/portal/case-admin-actions';
 import { CaptureQrPanel, type CaseImage } from '@/components/portal/capture-qr-panel';
 import { PageHeader } from '@/components/portal/page-header';
 import { PatientFields } from '@/components/portal/patient-fields';
@@ -27,7 +28,7 @@ import { buttonVariants } from '@/components/ui/button-variants';
 import { Card, CardBody } from '@/components/ui/card';
 import { Field, Input, Select } from '@/components/ui/field';
 import { Alert, ErrorState, Loading } from '@/components/ui/feedback';
-import { api, type GetResult, type PostResult } from '@/lib/api';
+import { api, ApiError, type GetResult, type PostResult } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { date } from '@/lib/format';
 import { listShotLabels, missingRequiredShots } from '@/lib/shots';
@@ -43,6 +44,12 @@ type CaseSummary = PostResult<'/cases'>;
  * restated here rather than inferred.
  */
 type AnamnesisPrefill = GetResult<'/patients/{patientId}/anamnesis/latest'> | null;
+type SavedAnamnesis = GetResult<'/cases/{caseId}/anamnesis'>;
+
+/** The query parameter that carries the case being filled, so a reload resumes it. */
+const RESUME_PARAM = 'caso';
+/** Statuses in which the case is still the desk's to fill. */
+const INTAKE_STATUSES = ['borrador', 'solicitar_fotos'];
 
 type StepState = 'done' | 'current' | 'pending' | 'locked';
 type PatientMode = 'nuevo' | 'registrado';
@@ -62,10 +69,17 @@ type PatientMode = 'nuevo' | 'registrado';
  * anamnesis and the photographs both attach to a case id, so there is nothing to attach them to
  * until the first step has been submitted. The case starts as `draft` and only enters the tray once
  * it has content.
+ *
+ * The case exists on the server from the first step on, so the page must be able to pick it up
+ * again: its id goes into the address (`?caso=<id>`) the moment it is created, and opening that
+ * address — after a reload, or from «Continuar ingreso» in the tray — restores the patient, the saved
+ * anamnesis, the photographs and the analysis. Until 25/10/2026 everything lived only in memory and
+ * a reload left a half-filled case that nobody could finish.
  */
 export default function NuevoCasoPage() {
   const href = usePortalHref();
   const router = useRouter();
+  const pathname = usePathname();
   const {
     data: catalogs,
     error: catalogsError,
@@ -139,8 +153,56 @@ export default function NuevoCasoPage() {
     setPatient(target);
     setClinicalCase(created);
     setPrefill(previous);
+    // From here on the case is real: put it in the address so a reload comes back to it.
+    router.replace(`${pathname}?${RESUME_PARAM}=${created.id}`, { scroll: false });
     return created;
   });
+
+  // --- Resuming a case already created ----------------------------------------
+  const [resuming, setResuming] = useState(false);
+  const [resumeError, setResumeError] = useState<string | null>(null);
+
+  const resume = async (caseId: string): Promise<void> => {
+    setResuming(true);
+    setResumeError(null);
+    try {
+      const found = await api.getPath<CaseSummary>(`/cases/${caseId}`);
+      const owner = await api.getPath<Patient>(`/patients/${found.patientId}`);
+      let saved: SavedAnamnesis | null = null;
+      try {
+        saved = await api.getPath<SavedAnamnesis>(`/cases/${caseId}/anamnesis`);
+      } catch (error: unknown) {
+        // 404 is the normal answer while no anamnesis has been saved yet.
+        if (!(error instanceof ApiError && error.status === 404)) throw error;
+      }
+      const previous = await api.getPath<AnamnesisPrefill>(
+        `/patients/${owner.id}/anamnesis/latest`,
+        { excludeCaseId: caseId },
+      );
+
+      setPatient(owner);
+      setClinicalCase(found);
+      setGroundTruth(found.groundTruthIga ?? '');
+      setPrefill(previous);
+      if (saved !== null) {
+        setAnswers(saved.answers as AnamnesisAnswers);
+        setAnamnesisSaved(true);
+      }
+    } catch (error: unknown) {
+      setResumeError(
+        error instanceof ApiError ? error.message : 'No se pudo recuperar el caso.',
+      );
+    } finally {
+      setResuming(false);
+    }
+  };
+
+  useEffect(() => {
+    // Read once, on arrival: the address is written by this page itself after creating the case.
+    const caseId = new URLSearchParams(window.location.search).get(RESUME_PARAM);
+    if (caseId !== null && caseId !== '') void resume(caseId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const saveAnamnesis = useAction(async (complete: boolean) => {
     if (clinicalCase === null) return null;
@@ -205,6 +267,8 @@ export default function NuevoCasoPage() {
   ];
   const doneCount = steps.filter((step) => step.state === 'done').length;
 
+  if (resuming) return <Loading label="Recuperando el caso…" />;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
@@ -218,6 +282,31 @@ export default function NuevoCasoPage() {
           </Link>
         }
       />
+
+      {resumeError !== null ? (
+        <Alert tone="danger" title="No se pudo recuperar el caso">
+          <p>{resumeError}</p>
+          <p className="mt-2">
+            Búsquelo en la bandeja y use «Continuar ingreso», o registre uno nuevo en este
+            formulario.
+          </p>
+        </Alert>
+      ) : null}
+
+      {created && clinicalCase.voidedAt !== null ? (
+        <Alert tone="danger" title="Este caso está anulado">
+          {clinicalCase.voidReason ?? 'Sin motivo registrado.'} Ya no admite fotografías, respuestas
+          ni análisis.
+        </Alert>
+      ) : created && !INTAKE_STATUSES.includes(clinicalCase.status) ? (
+        <Alert tone="warning" title="Este caso ya pasó a revisión">
+          El especialista ya abrió la ficha. Las fotografías o respuestas que agregue ahora no
+          formarán parte de lo que revisó.{' '}
+          <Link href={href(`/casos/${clinicalCase.id}`)} className="font-medium underline">
+            Ir a la ficha
+          </Link>
+        </Alert>
+      ) : null}
 
       {/* Progress on small screens, where the rail does not fit. */}
       <div className="lg:hidden">
@@ -556,7 +645,7 @@ export default function NuevoCasoPage() {
                       label="Paciente"
                       value={`${patientLabel ?? '—'} (${patient?.patientCode ?? '—'})`}
                     />
-                    <SummaryItem label="Registrado" value={date(new Date().toISOString())} />
+                    <SummaryItem label="Registrado" value={date(clinicalCase.createdAt)} />
                     <SummaryItem
                       label="Anamnesis"
                       value={
@@ -611,6 +700,15 @@ export default function NuevoCasoPage() {
               </>
             )}
           </Section>
+
+          {created ? (
+            <CaseAdminActions
+              caseId={clinicalCase.id}
+              // The patient may have changed: re-read the case as a resume would.
+              onChanged={() => void resume(clinicalCase.id)}
+              onRemoved={() => router.push(href('/casos'))}
+            />
+          ) : null}
         </div>
       </div>
     </div>

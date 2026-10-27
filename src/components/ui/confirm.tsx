@@ -31,6 +31,8 @@ export function ConfirmAction({
   pending = false,
   error = null,
   disabled = false,
+  defaultOpen = false,
+  onCancel,
   onConfirm,
 }: {
   label: string;
@@ -46,9 +48,16 @@ export function ConfirmAction({
   pending?: boolean;
   error?: string | null;
   disabled?: boolean;
+  /** Start at the confirmation step, for a caller that already asked (a row's action button). */
+  defaultOpen?: boolean;
+  onCancel?: () => void;
   onConfirm: (reason: string) => void;
 }): JSX.Element {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
+  const cancel = (): void => {
+    setOpen(false);
+    onCancel?.();
+  };
   const [reason, setReason] = useState('');
   const confirmRef = useRef<HTMLButtonElement>(null);
 
@@ -79,7 +88,7 @@ export function ConfirmAction({
     <div
       aria-live="polite"
       onKeyDown={(event) => {
-        if (event.key === 'Escape') setOpen(false);
+        if (event.key === 'Escape') cancel();
       }}
     >
       <Alert tone={tone} title={title}>
@@ -97,9 +106,7 @@ export function ConfirmAction({
             />
           ) : null}
 
-          {error !== null ? (
-            <p className="text-sm font-medium text-red-700">{error}</p>
-          ) : null}
+          {error !== null ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
 
           <div className="flex flex-wrap gap-2">
             <Button
@@ -112,7 +119,7 @@ export function ConfirmAction({
             >
               {confirmLabel}
             </Button>
-            <Button variant="ghost" size="sm" disabled={pending} onClick={() => setOpen(false)}>
+            <Button variant="ghost" size="sm" disabled={pending} onClick={cancel}>
               Cancelar
             </Button>
           </div>

@@ -63,14 +63,20 @@ export function AnalysisPanel({
    * abierta y olvidada en una consulta cada dos segundos contra la base, toda la tarde. Se recarga
    * también cuando cambia el recuento de fotografías, por si una toma nueva invalida la lectura.
    */
+  const [resumedRunning, setResumedRunning] = useState(false);
   const analysis = usePolledApi<CaseAnalysis>(
     `/inference/case/${caseId}/analysis`,
     undefined,
-    started ? 2000 : 0,
+    // Also while an analysis started before a reload is still running: otherwise the page that
+    // resumes the intake would show it pending forever.
+    started || resumedRunning ? 2000 : 0,
   );
   const current = analysis.data ?? null;
   const hasViews = current !== null && current.views.length > 0;
   const running = hasViews && current.pending > 0;
+  useEffect(() => {
+    setResumedRunning(running);
+  }, [running]);
   const done = hasViews && current.completed > 0 && current.pending === 0;
   const failed = hasViews && current.pending === 0 && current.completed === 0 && current.failed > 0;
   const latest = hasViews ? current.views[current.views.length - 1]?.inference ?? null : null;
