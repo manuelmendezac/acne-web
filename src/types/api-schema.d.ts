@@ -1988,6 +1988,11 @@ export interface components {
              * @enum {string|null}
              */
             shotKey: "general" | "acercamiento" | "borde" | "perfil_derecho" | "perfil_izquierdo" | "pecho" | "espalda" | "otra" | null;
+            /**
+             * @description Lo que la segunda opinión vio al subir la foto. El caso no se analiza si ninguna toma obligatoria dice `acne`. Null: no se verificó (regla apagada o foto anterior).
+             * @enum {string|null}
+             */
+            acneCheck: "acne" | "piel_sana" | "indeterminado" | null;
             createdAt: string;
             /** @description URL firmada con TTL de 15 minutos (RNF-02). */
             url: string;
@@ -2320,6 +2325,11 @@ export interface components {
              * @enum {string|null}
              */
             shotKey: "general" | "acercamiento" | "borde" | "perfil_derecho" | "perfil_izquierdo" | "pecho" | "espalda" | "otra" | null;
+            /**
+             * @description Lo que la segunda opinión vio al subir la foto. El caso no se analiza si ninguna toma obligatoria dice `acne`. Null: no se verificó (regla apagada o foto anterior).
+             * @enum {string|null}
+             */
+            acneCheck: "acne" | "piel_sana" | "indeterminado" | null;
             createdAt: string;
             /** @description URL firmada con TTL de 15 minutos (RNF-02). */
             url: string;

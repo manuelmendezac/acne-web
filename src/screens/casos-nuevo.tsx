@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ArrowLeft,
@@ -11,48 +11,59 @@ import {
   UserPlus,
   UserRound,
   Users,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
-import { AnamnesisForm, type AnamnesisAnswers } from '@/components/portal/anamnesis-form';
-import { AnalysisPanel } from '@/components/portal/analysis-panel';
-import { CaseAdminActions } from '@/components/portal/case-admin-actions';
-import { CaptureQrPanel, type CaseImage } from '@/components/portal/capture-qr-panel';
-import { PageHeader } from '@/components/portal/page-header';
-import { PatientFields } from '@/components/portal/patient-fields';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { buttonVariants } from '@/components/ui/button-variants';
-import { Card, CardBody } from '@/components/ui/card';
-import { Field, Input, Select } from '@/components/ui/field';
-import { Alert, ErrorState, Loading } from '@/components/ui/feedback';
-import { api, ApiError, type GetResult, type PostResult } from '@/lib/api';
-import { cn } from '@/lib/cn';
-import { date } from '@/lib/format';
-import { listShotLabels, missingRequiredShots } from '@/lib/shots';
-import { useAction, useApi, useDebouncedValue } from '@/lib/use-api';
-import { anamnesisQuestionsFor, useCatalogs } from '@/lib/use-catalogs';
-import { usePortalHref } from '@/lib/use-portal';
+import {
+  AnamnesisForm,
+  type AnamnesisAnswers,
+} from "@/components/portal/anamnesis-form";
+import { AnalysisPanel } from "@/components/portal/analysis-panel";
+import { CaseAdminActions } from "@/components/portal/case-admin-actions";
+import {
+  CaptureQrPanel,
+  type CaseImage,
+} from "@/components/portal/capture-qr-panel";
+import { PageHeader } from "@/components/portal/page-header";
+import { PatientFields } from "@/components/portal/patient-fields";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { Card, CardBody } from "@/components/ui/card";
+import { Field, Input, Select } from "@/components/ui/field";
+import { Alert, ErrorState, Loading } from "@/components/ui/feedback";
+import { api, ApiError, type GetResult, type PostResult } from "@/lib/api";
+import { cn } from "@/lib/cn";
+import { date } from "@/lib/format";
+import {
+  lacksAcneEvidence,
+  listShotLabels,
+  missingRequiredShots,
+} from "@/lib/shots";
+import { useAction, useApi, useDebouncedValue } from "@/lib/use-api";
+import { anamnesisQuestionsFor, useCatalogs } from "@/lib/use-catalogs";
+import { usePortalHref } from "@/lib/use-portal";
 
-type Patient = GetResult<'/patients'>[number];
-type CaseSummary = PostResult<'/cases'>;
+type Patient = GetResult<"/patients">[number];
+type CaseSummary = PostResult<"/cases">;
 /**
  * The endpoint answers `null` for a patient with no previous visit. OpenAPI describes only the
  * success shape — a response body of `null` has no schema to declare — so the nullability is
  * restated here rather than inferred.
  */
-type AnamnesisPrefill = GetResult<'/patients/{patientId}/anamnesis/latest'> | null;
-type SavedAnamnesis = GetResult<'/cases/{caseId}/anamnesis'>;
+type AnamnesisPrefill =
+  GetResult<"/patients/{patientId}/anamnesis/latest"> | null;
+type SavedAnamnesis = GetResult<"/cases/{caseId}/anamnesis">;
 
 /** The query parameter that carries the case being filled, so a reload resumes it. */
-const RESUME_PARAM = 'caso';
+const RESUME_PARAM = "caso";
 /** Statuses in which the case is still the desk's to fill. */
-const INTAKE_STATUSES = ['borrador', 'solicitar_fotos'];
+const INTAKE_STATUSES = ["borrador", "solicitar_fotos"];
 
-type StepState = 'done' | 'current' | 'pending' | 'locked';
-type PatientMode = 'nuevo' | 'registrado';
+type StepState = "done" | "current" | "pending" | "locked";
+type PatientMode = "nuevo" | "registrado";
 
 /**
  * Case intake, on a single screen.
@@ -88,26 +99,32 @@ export default function NuevoCasoPage() {
   } = useCatalogs();
 
   // --- Patient ---------------------------------------------------------------
-  const [mode, setMode] = useState<PatientMode>('nuevo');
-  const [fullName, setFullName] = useState('');
-  const [documentId, setDocumentId] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [sex, setSex] = useState('');
-  const [fitzpatrick, setFitzpatrick] = useState('');
+  const [mode, setMode] = useState<PatientMode>("nuevo");
+  const [fullName, setFullName] = useState("");
+  const [documentId, setDocumentId] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [sex, setSex] = useState("");
+  const [fitzpatrick, setFitzpatrick] = useState("");
   const [consent, setConsent] = useState(false);
-  const [groundTruth, setGroundTruth] = useState('');
+  const [groundTruth, setGroundTruth] = useState("");
 
-  const [patientSearch, setPatientSearch] = useState('');
+  const [patientSearch, setPatientSearch] = useState("");
   // Kept as the record itself, not an id looked up in the results: typing a new search must not
   // silently drop the chosen patient — with the old derived lookup, an empty match meant
   // "register a new one" and the case went to a duplicate.
-  const [selectedExisting, setSelectedExisting] = useState<Patient | null>(null);
+  const [selectedExisting, setSelectedExisting] = useState<Patient | null>(
+    null,
+  );
   const debouncedPatientSearch = useDebouncedValue(patientSearch.trim(), 200);
-  const existing = useApi<Patient[]>(mode === 'registrado' ? '/patients' : null, {
-    search: debouncedPatientSearch === '' ? undefined : debouncedPatientSearch,
-  });
+  const existing = useApi<Patient[]>(
+    mode === "registrado" ? "/patients" : null,
+    {
+      search:
+        debouncedPatientSearch === "" ? undefined : debouncedPatientSearch,
+    },
+  );
 
   // --- Created records -------------------------------------------------------
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -121,27 +138,34 @@ export default function NuevoCasoPage() {
   // --- Photographs -----------------------------------------------------------
   const [images, setImages] = useState<CaseImage[]>([]);
   const imageCount = images.length;
-  const missingShots = missingRequiredShots(images, catalogs?.shots?.definitions ?? []);
+  const missingShots = missingRequiredShots(
+    images,
+    catalogs?.shots?.definitions ?? [],
+  );
+  const noAcneEvidence = lacksAcneEvidence(
+    images,
+    catalogs?.shots?.definitions ?? [],
+  );
 
   const startCase = useAction(async () => {
-    let target = mode === 'registrado' ? selectedExisting : null;
+    let target = mode === "registrado" ? selectedExisting : null;
 
     if (target === null) {
-      target = await api.post<Patient>('/patients', {
+      target = await api.post<Patient>("/patients", {
         fullName,
-        documentId: documentId === '' ? undefined : documentId,
-        phone: phone === '' ? undefined : phone,
-        email: email === '' ? undefined : email,
-        birthDate: birthDate === '' ? undefined : birthDate,
-        sex: sex === '' ? undefined : sex,
-        fitzpatrickPhototype: fitzpatrick === '' ? undefined : fitzpatrick,
+        documentId: documentId === "" ? undefined : documentId,
+        phone: phone === "" ? undefined : phone,
+        email: email === "" ? undefined : email,
+        birthDate: birthDate === "" ? undefined : birthDate,
+        sex: sex === "" ? undefined : sex,
+        fitzpatrickPhototype: fitzpatrick === "" ? undefined : fitzpatrick,
         consentAccepted: consent,
       });
     }
 
-    const created = await api.post<CaseSummary>('/cases', {
+    const created = await api.post<CaseSummary>("/cases", {
       patientId: target.id,
-      groundTruthIga: groundTruth === '' ? undefined : groundTruth,
+      groundTruthIga: groundTruth === "" ? undefined : groundTruth,
     });
 
     // A returning patient usually has most of the answers already; offering them beats retyping.
@@ -154,7 +178,9 @@ export default function NuevoCasoPage() {
     setClinicalCase(created);
     setPrefill(previous);
     // From here on the case is real: put it in the address so a reload comes back to it.
-    router.replace(`${pathname}?${RESUME_PARAM}=${created.id}`, { scroll: false });
+    router.replace(`${pathname}?${RESUME_PARAM}=${created.id}`, {
+      scroll: false,
+    });
     return created;
   });
 
@@ -182,7 +208,7 @@ export default function NuevoCasoPage() {
 
       setPatient(owner);
       setClinicalCase(found);
-      setGroundTruth(found.groundTruthIga ?? '');
+      setGroundTruth(found.groundTruthIga ?? "");
       setPrefill(previous);
       if (saved !== null) {
         setAnswers(saved.answers as AnamnesisAnswers);
@@ -190,7 +216,9 @@ export default function NuevoCasoPage() {
       }
     } catch (error: unknown) {
       setResumeError(
-        error instanceof ApiError ? error.message : 'No se pudo recuperar el caso.',
+        error instanceof ApiError
+          ? error.message
+          : "No se pudo recuperar el caso.",
       );
     } finally {
       setResuming(false);
@@ -199,8 +227,10 @@ export default function NuevoCasoPage() {
 
   useEffect(() => {
     // Read once, on arrival: the address is written by this page itself after creating the case.
-    const caseId = new URLSearchParams(window.location.search).get(RESUME_PARAM);
-    if (caseId !== null && caseId !== '') void resume(caseId);
+    const caseId = new URLSearchParams(window.location.search).get(
+      RESUME_PARAM,
+    );
+    if (caseId !== null && caseId !== "") void resume(caseId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -216,56 +246,75 @@ export default function NuevoCasoPage() {
   });
 
   const ageYears = patient?.ageYears ?? ageFrom(birthDate);
-  const patientSex = patient?.sex ?? (sex === '' ? null : sex);
-  const applicable = anamnesisQuestionsFor(catalogs, patientSex, ageYears).length;
+  const patientSex = patient?.sex ?? (sex === "" ? null : sex);
+  const applicable = anamnesisQuestionsFor(
+    catalogs,
+    patientSex,
+    ageYears,
+  ).length;
   const answeredCount = Object.values(answers).filter(
-    (a) => a.value !== null || (a.detail ?? '') !== '',
+    (a) => a.value !== null || (a.detail ?? "") !== "",
   ).length;
 
   const created = clinicalCase !== null;
   const photosComplete = imageCount > 0 && missingShots.length === 0;
   const canStart =
-    mode === 'registrado' ? selectedExisting !== null : fullName.trim() !== '' && consent;
+    mode === "registrado"
+      ? selectedExisting !== null
+      : fullName.trim() !== "" && consent;
 
   const patientLabel = patient?.fullName ?? patient?.patientCode ?? null;
-  const steps: Array<{ id: string; label: string; detail: string; state: StepState }> = [
+  const steps: Array<{
+    id: string;
+    label: string;
+    detail: string;
+    state: StepState;
+  }> = [
     {
-      id: 'paso-paciente',
-      label: 'Paciente',
-      detail: created ? (patientLabel ?? 'Registrado') : 'Alta o búsqueda',
-      state: created ? 'done' : 'current',
+      id: "paso-paciente",
+      label: "Paciente",
+      detail: created ? (patientLabel ?? "Registrado") : "Alta o búsqueda",
+      state: created ? "done" : "current",
     },
     {
-      id: 'paso-anamnesis',
-      label: 'Anamnesis',
-      detail: anamnesisSaved ? `${answeredCount} de ${applicable} respuestas` : 'Cuestionario de ingreso',
-      state: !created ? 'locked' : anamnesisSaved ? 'done' : 'current',
+      id: "paso-anamnesis",
+      label: "Anamnesis",
+      detail: anamnesisSaved
+        ? `${answeredCount} de ${applicable} respuestas`
+        : "Cuestionario de ingreso",
+      state: !created ? "locked" : anamnesisSaved ? "done" : "current",
     },
     {
-      id: 'paso-fotografias',
-      label: 'Fotografías',
+      id: "paso-fotografias",
+      label: "Fotografías",
       detail:
         imageCount === 0
-          ? 'Protocolo de tres tomas'
+          ? "Protocolo de tres tomas"
           : photosComplete
             ? `${imageCount} toma(s), completo`
             : `${imageCount} toma(s), incompleto`,
-      state: !created ? 'locked' : photosComplete ? 'done' : anamnesisSaved ? 'current' : 'pending',
+      state: !created
+        ? "locked"
+        : photosComplete
+          ? "done"
+          : anamnesisSaved
+            ? "current"
+            : "pending",
     },
     {
-      id: 'paso-analisis',
-      label: 'Análisis',
-      detail: 'Evaluación asistida',
-      state: !created ? 'locked' : 'pending',
+      id: "paso-analisis",
+      label: "Análisis",
+      detail: "Evaluación asistida",
+      state: !created ? "locked" : "pending",
     },
     {
-      id: 'paso-cierre',
-      label: 'Cierre',
-      detail: 'Enviar a revisión',
-      state: !created ? 'locked' : 'pending',
+      id: "paso-cierre",
+      label: "Cierre",
+      detail: "Enviar a revisión",
+      state: !created ? "locked" : "pending",
     },
   ];
-  const doneCount = steps.filter((step) => step.state === 'done').length;
+  const doneCount = steps.filter((step) => step.state === "done").length;
 
   if (resuming) return <Loading label="Recuperando el caso…" />;
 
@@ -273,10 +322,13 @@ export default function NuevoCasoPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         eyebrow="Ingreso de paciente"
-        title={created ? `Caso ${clinicalCase.caseCode}` : 'Nuevo caso'}
+        title={created ? `Caso ${clinicalCase.caseCode}` : "Nuevo caso"}
         description="Registre al paciente, su anamnesis y las fotografías antes de pasar el caso a revisión. Nada de lo que se haga aquí cuenta como tiempo de consulta."
         actions={
-          <Link href={href('/casos')} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+          <Link
+            href={href("/casos")}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Volver a la bandeja
           </Link>
@@ -287,22 +339,25 @@ export default function NuevoCasoPage() {
         <Alert tone="danger" title="No se pudo recuperar el caso">
           <p>{resumeError}</p>
           <p className="mt-2">
-            Búsquelo en la bandeja y use «Continuar ingreso», o registre uno nuevo en este
-            formulario.
+            Búsquelo en la bandeja y use «Continuar ingreso», o registre uno
+            nuevo en este formulario.
           </p>
         </Alert>
       ) : null}
 
       {created && clinicalCase.voidedAt !== null ? (
         <Alert tone="danger" title="Este caso está anulado">
-          {clinicalCase.voidReason ?? 'Sin motivo registrado.'} Ya no admite fotografías, respuestas
-          ni análisis.
+          {clinicalCase.voidReason ?? "Sin motivo registrado."} Ya no admite
+          fotografías, respuestas ni análisis.
         </Alert>
       ) : created && !INTAKE_STATUSES.includes(clinicalCase.status) ? (
         <Alert tone="warning" title="Este caso ya pasó a revisión">
-          El especialista ya abrió la ficha. Las fotografías o respuestas que agregue ahora no
-          formarán parte de lo que revisó.{' '}
-          <Link href={href(`/casos/${clinicalCase.id}`)} className="font-medium underline">
+          El especialista ya abrió la ficha. Las fotografías o respuestas que
+          agregue ahora no formarán parte de lo que revisó.{" "}
+          <Link
+            href={href(`/casos/${clinicalCase.id}`)}
+            className="font-medium underline"
+          >
             Ir a la ficha
           </Link>
         </Alert>
@@ -315,7 +370,7 @@ export default function NuevoCasoPage() {
             {doneCount} de {steps.length} pasos completos
           </span>
           <span className="font-medium text-neutral-900">
-            {steps.find((step) => step.state === 'current')?.label ?? ''}
+            {steps.find((step) => step.state === "current")?.label ?? ""}
           </span>
         </div>
         <div className="mt-2 grid grid-cols-5 gap-1">
@@ -323,12 +378,12 @@ export default function NuevoCasoPage() {
             <span
               key={step.id}
               className={cn(
-                'h-1 rounded-full',
-                step.state === 'done'
-                  ? 'bg-purple-900'
-                  : step.state === 'current'
-                    ? 'bg-purple-300'
-                    : 'bg-neutral-200',
+                "h-1 rounded-full",
+                step.state === "done"
+                  ? "bg-purple-900"
+                  : step.state === "current"
+                    ? "bg-purple-300"
+                    : "bg-neutral-200",
               )}
             />
           ))}
@@ -343,25 +398,25 @@ export default function NuevoCasoPage() {
           <Section
             id="paso-paciente"
             number={1}
-            state={created ? 'done' : 'current'}
+            state={created ? "done" : "current"}
             title="Paciente"
             description={
               created
-                ? 'Los datos del paciente se corrigen desde su ficha.'
-                : 'Busque a un paciente que ya se atendió en el centro o registre uno nuevo.'
+                ? "Los datos del paciente se corrigen desde su ficha."
+                : "Busque a un paciente que ya se atendió en el centro o registre uno nuevo."
             }
           >
             {created ? (
               <div className="flex flex-wrap items-center gap-4 px-6 py-5">
-                <Initials name={patientLabel ?? '—'} />
+                <Initials name={patientLabel ?? "—"} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-neutral-900">
-                    {patientLabel ?? '—'}
+                    {patientLabel ?? "—"}
                   </p>
                   <p className="text-sm text-neutral-500">
                     {patient?.patientCode}
-                    {ageYears !== null ? ` · ${ageYears} años` : ''}
-                    {patientSex !== null ? ` · ${patientSex}` : ''}
+                    {ageYears !== null ? ` · ${ageYears} años` : ""}
+                    {patientSex !== null ? ` · ${patientSex}` : ""}
                   </p>
                 </div>
                 <dl className="flex gap-6 text-sm">
@@ -371,9 +426,11 @@ export default function NuevoCasoPage() {
                       {clinicalCase.caseCode}
                     </dd>
                   </div>
-                  {groundTruth !== '' ? (
+                  {groundTruth !== "" ? (
                     <div>
-                      <dt className="text-xs text-neutral-500">Patrón de consenso</dt>
+                      <dt className="text-xs text-neutral-500">
+                        Patrón de consenso
+                      </dt>
                       <dd className="font-medium text-neutral-900">
                         {catalogs?.iga.labels[groundTruth] ?? groundTruth}
                       </dd>
@@ -388,11 +445,11 @@ export default function NuevoCasoPage() {
                     value={mode}
                     onChange={(next) => {
                       setMode(next);
-                      if (next === 'nuevo') setSelectedExisting(null);
+                      if (next === "nuevo") setSelectedExisting(null);
                     }}
                   />
 
-                  {mode === 'registrado' ? (
+                  {mode === "registrado" ? (
                     <PatientPicker
                       search={patientSearch}
                       onSearch={setPatientSearch}
@@ -408,7 +465,15 @@ export default function NuevoCasoPage() {
                         description="El nombre, el documento y el contacto se guardan cifrados."
                       >
                         <PatientFields
-                          values={{ fullName, documentId, phone, email, birthDate, sex, fitzpatrick }}
+                          values={{
+                            fullName,
+                            documentId,
+                            phone,
+                            email,
+                            birthDate,
+                            sex,
+                            fitzpatrick,
+                          }}
                           onChange={(values) => {
                             setFullName(values.fullName);
                             setDocumentId(values.documentId);
@@ -423,10 +488,10 @@ export default function NuevoCasoPage() {
 
                       <label
                         className={cn(
-                          'flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors',
+                          "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors",
                           consent
-                            ? 'border-purple-900/30 bg-purple-50/60'
-                            : 'border-neutral-200 hover:border-neutral-300',
+                            ? "border-purple-900/30 bg-purple-50/60"
+                            : "border-neutral-200 hover:border-neutral-300",
                         )}
                       >
                         <input
@@ -437,14 +502,17 @@ export default function NuevoCasoPage() {
                         />
                         <span className="text-sm">
                           <span className="flex items-center gap-1.5 font-medium text-neutral-900">
-                            <ShieldCheck className="h-4 w-4 text-purple-900" aria-hidden />
+                            <ShieldCheck
+                              className="h-4 w-4 text-purple-900"
+                              aria-hidden
+                            />
                             Consentimiento informado
                             <span className="text-red-700">*</span>
                           </span>
                           <span className="mt-1 block text-neutral-500">
-                            El paciente autoriza el uso de sus fotografías con fines de
-                            investigación académica, conforme a la Ley N.º 29733 de protección de
-                            datos personales.
+                            El paciente autoriza el uso de sus fotografías con
+                            fines de investigación académica, conforme a la Ley
+                            N.º 29733 de protección de datos personales.
                           </span>
                         </span>
                       </label>
@@ -455,7 +523,10 @@ export default function NuevoCasoPage() {
                     title="Datos del estudio"
                     description="Etiqueta de referencia del lote; permite comparar las fases del estudio. Puede dejarse sin definir."
                   >
-                    <Field label="Patrón de consenso IGA" className="sm:max-w-xs">
+                    <Field
+                      label="Patrón de consenso IGA"
+                      className="sm:max-w-xs"
+                    >
                       <Select
                         value={groundTruth}
                         onChange={(event) => setGroundTruth(event.target.value)}
@@ -498,7 +569,7 @@ export default function NuevoCasoPage() {
           <Section
             id="paso-anamnesis"
             number={2}
-            state={!created ? 'locked' : anamnesisSaved ? 'done' : 'current'}
+            state={!created ? "locked" : anamnesisSaved ? "done" : "current"}
             title="Anamnesis"
             description="Cuestionario de ingreso. Se registra igual en todas las fases del estudio."
             aside={
@@ -521,7 +592,7 @@ export default function NuevoCasoPage() {
                 ) : (
                   <ErrorState
                     message={`No se pudo cargar el cuestionario de anamnesis${
-                      catalogsError !== null ? `: ${catalogsError.message}` : ''
+                      catalogsError !== null ? `: ${catalogsError.message}` : ""
                     }. Compruebe que la API esté disponible y reintente.`}
                     onRetry={reloadCatalogs}
                   />
@@ -539,16 +610,23 @@ export default function NuevoCasoPage() {
                     prefill={
                       prefill === null
                         ? null
-                        : { caseCode: prefill.caseCode, visitedAt: prefill.visitedAt }
+                        : {
+                            caseCode: prefill.caseCode,
+                            visitedAt: prefill.visitedAt,
+                          }
                     }
                     onApplyPrefill={() => {
-                      if (prefill !== null) setAnswers(prefill.answers as AnamnesisAnswers);
+                      if (prefill !== null)
+                        setAnswers(prefill.answers as AnamnesisAnswers);
                     }}
                     disabled={saveAnamnesis.pending}
                   />
 
                   {saveAnamnesis.error !== null ? (
-                    <Alert tone="danger" title="No se pudo guardar la anamnesis">
+                    <Alert
+                      tone="danger"
+                      title="No se pudo guardar la anamnesis"
+                    >
                       {saveAnamnesis.error.message}
                     </Alert>
                   ) : null}
@@ -557,16 +635,16 @@ export default function NuevoCasoPage() {
                 <SectionFooter
                   note={
                     anamnesisSaved
-                      ? 'Guardada. Puede corregir respuestas y volver a guardar.'
-                      : 'Ninguna pregunta es obligatoria.'
+                      ? "Guardada. Puede corregir respuestas y volver a guardar."
+                      : "Ninguna pregunta es obligatoria."
                   }
                   action={
                     <Button
-                      variant={anamnesisSaved ? 'outline' : undefined}
+                      variant={anamnesisSaved ? "outline" : undefined}
                       loading={saveAnamnesis.pending}
                       onClick={() => void saveAnamnesis.run(true)}
                     >
-                      {anamnesisSaved ? 'Guardar cambios' : 'Guardar anamnesis'}
+                      {anamnesisSaved ? "Guardar cambios" : "Guardar anamnesis"}
                     </Button>
                   }
                 />
@@ -578,7 +656,15 @@ export default function NuevoCasoPage() {
           <Section
             id="paso-fotografias"
             number={3}
-            state={!created ? 'locked' : photosComplete ? 'done' : anamnesisSaved ? 'current' : 'pending'}
+            state={
+              !created
+                ? "locked"
+                : photosComplete
+                  ? "done"
+                  : anamnesisSaved
+                    ? "current"
+                    : "pending"
+            }
             title="Fotografías clínicas"
             description="Vista general y ambos perfiles, desde el teléfono con un código QR o desde este equipo."
             aside={
@@ -611,6 +697,7 @@ export default function NuevoCasoPage() {
                 caseId={clinicalCase.id}
                 imageCount={imageCount}
                 missingShots={missingShots}
+                noAcneEvidence={noAcneEvidence}
                 anamnesisReady={anamnesisSaved}
               />
             </div>
@@ -630,7 +717,7 @@ export default function NuevoCasoPage() {
           <Section
             id="paso-cierre"
             number={5}
-            state={created ? 'pending' : 'locked'}
+            state={created ? "pending" : "locked"}
             title="Terminar el ingreso"
             description="Revise el resumen y envíe el caso a la consulta."
           >
@@ -640,31 +727,42 @@ export default function NuevoCasoPage() {
               <>
                 <div className="space-y-4 px-6 py-5">
                   <dl className="grid overflow-hidden rounded-lg border border-neutral-200 sm:grid-cols-3">
-                    <SummaryItem label="Caso" value={clinicalCase.caseCode} mono />
+                    <SummaryItem
+                      label="Caso"
+                      value={clinicalCase.caseCode}
+                      mono
+                    />
                     <SummaryItem
                       label="Paciente"
-                      value={`${patientLabel ?? '—'} (${patient?.patientCode ?? '—'})`}
+                      value={`${patientLabel ?? "—"} (${patient?.patientCode ?? "—"})`}
                     />
-                    <SummaryItem label="Registrado" value={date(clinicalCase.createdAt)} />
+                    <SummaryItem
+                      label="Registrado"
+                      value={date(clinicalCase.createdAt)}
+                    />
                     <SummaryItem
                       label="Anamnesis"
                       value={
                         anamnesisSaved
                           ? `${answeredCount} de ${applicable} preguntas`
-                          : 'Sin registrar'
+                          : "Sin registrar"
                       }
-                      tone={anamnesisSaved ? 'ok' : 'warn'}
+                      tone={anamnesisSaved ? "ok" : "warn"}
                     />
                     <SummaryItem
                       label="Fotografías"
-                      value={imageCount === 0 ? 'Ninguna' : `${imageCount} imagen(es)`}
-                      tone={photosComplete ? 'ok' : 'warn'}
+                      value={
+                        imageCount === 0
+                          ? "Ninguna"
+                          : `${imageCount} imagen(es)`
+                      }
+                      tone={photosComplete ? "ok" : "warn"}
                     />
                     <SummaryItem
                       label="Patrón de consenso"
                       value={
-                        groundTruth === ''
-                          ? 'Sin definir'
+                        groundTruth === ""
+                          ? "Sin definir"
                           : (catalogs?.iga.labels[groundTruth] ?? groundTruth)
                       }
                     />
@@ -672,13 +770,14 @@ export default function NuevoCasoPage() {
 
                   {imageCount === 0 ? (
                     <Alert tone="warning" title="El caso no tiene fotografías">
-                      Puede cerrarlo igualmente y añadirlas después, pero sin imagen el caso no es
-                      revisable ni aporta al estudio.
+                      Puede cerrarlo igualmente y añadirlas después, pero sin
+                      imagen el caso no es revisable ni aporta al estudio.
                     </Alert>
                   ) : missingShots.length > 0 ? (
                     <Alert tone="warning" title="Faltan tomas obligatorias">
-                      {listShotLabels(missingShots)}. El especialista podrá abrir el caso, pero no
-                      analizarlo ni registrar el diagnóstico hasta completarlas.
+                      {listShotLabels(missingShots)}. El especialista podrá
+                      abrir el caso, pero no analizarlo ni registrar el
+                      diagnóstico hasta completarlas.
                     </Alert>
                   ) : null}
                 </div>
@@ -687,10 +786,17 @@ export default function NuevoCasoPage() {
                   note="Abrir la ficha inicia el tiempo de revisión y revoca el código QR de este caso."
                   action={
                     <div className="flex flex-wrap gap-2">
-                      <Button variant="ghost" onClick={() => router.push(href('/casos'))}>
+                      <Button
+                        variant="ghost"
+                        onClick={() => router.push(href("/casos"))}
+                      >
                         Ir a la bandeja
                       </Button>
-                      <Button onClick={() => router.push(href(`/casos/${clinicalCase.id}`))}>
+                      <Button
+                        onClick={() =>
+                          router.push(href(`/casos/${clinicalCase.id}`))
+                        }
+                      >
                         Abrir la ficha para revisar
                         <ArrowRight className="h-4 w-4" aria-hidden />
                       </Button>
@@ -706,7 +812,7 @@ export default function NuevoCasoPage() {
               caseId={clinicalCase.id}
               // The patient may have changed: re-read the case as a resume would.
               onChanged={() => void resume(clinicalCase.id)}
-              onRemoved={() => router.push(href('/casos'))}
+              onRemoved={() => router.push(href("/casos"))}
             />
           ) : null}
         </div>
@@ -732,29 +838,31 @@ function StepRail({
               <span
                 aria-hidden
                 className={cn(
-                  'absolute left-3.5 top-8 -ml-px h-[calc(100%-2rem)] w-0.5',
-                  step.state === 'done' ? 'bg-purple-900' : 'bg-neutral-200',
+                  "absolute left-3.5 top-8 -ml-px h-[calc(100%-2rem)] w-0.5",
+                  step.state === "done" ? "bg-purple-900" : "bg-neutral-200",
                 )}
               />
             ) : null}
             <a
               href={`#${step.id}`}
-              aria-current={step.state === 'current' ? 'step' : undefined}
+              aria-current={step.state === "current" ? "step" : undefined}
               className="group flex items-start gap-3"
             >
               <StepDot number={index + 1} state={step.state} />
               <span className="min-w-0 pt-1">
                 <span
                   className={cn(
-                    'block text-sm font-medium',
-                    step.state === 'locked'
-                      ? 'text-neutral-400'
-                      : 'text-neutral-900 group-hover:text-purple-900',
+                    "block text-sm font-medium",
+                    step.state === "locked"
+                      ? "text-neutral-400"
+                      : "text-neutral-900 group-hover:text-purple-900",
                   )}
                 >
                   {step.label}
                 </span>
-                <span className="block truncate text-xs text-neutral-500">{step.detail}</span>
+                <span className="block truncate text-xs text-neutral-500">
+                  {step.detail}
+                </span>
               </span>
             </a>
           </li>
@@ -768,14 +876,20 @@ function StepDot({ number, state }: { number: number; state: StepState }) {
   return (
     <span
       className={cn(
-        'relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-        state === 'done' && 'bg-purple-900 text-white',
-        state === 'current' && 'bg-white text-purple-900 ring-2 ring-purple-900',
-        state === 'pending' && 'bg-white text-neutral-600 ring-1 ring-neutral-300',
-        state === 'locked' && 'bg-neutral-100 text-neutral-400',
+        "relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+        state === "done" && "bg-purple-900 text-white",
+        state === "current" &&
+          "bg-white text-purple-900 ring-2 ring-purple-900",
+        state === "pending" &&
+          "bg-white text-neutral-600 ring-1 ring-neutral-300",
+        state === "locked" && "bg-neutral-100 text-neutral-400",
       )}
     >
-      {state === 'done' ? <Check className="h-3.5 w-3.5" aria-hidden /> : number}
+      {state === "done" ? (
+        <Check className="h-3.5 w-3.5" aria-hidden />
+      ) : (
+        number
+      )}
     </span>
   );
 }
@@ -800,16 +914,21 @@ function Section({
 }) {
   return (
     <section id={id} aria-labelledby={`${id}-titulo`} className="scroll-mt-20">
-      <Card className={cn(state === 'current' && 'ring-1 ring-purple-900/10')}>
+      <Card className={cn(state === "current" && "ring-1 ring-purple-900/10")}>
         <header className="flex flex-wrap items-start gap-4 border-b border-neutral-200 px-6 py-4">
           <StepDot number={number} state={state} />
           <div className="min-w-0 flex-1">
-            <h2 id={`${id}-titulo`} className="text-base font-semibold text-neutral-900">
+            <h2
+              id={`${id}-titulo`}
+              className="text-base font-semibold text-neutral-900"
+            >
               {title}
             </h2>
             <p className="mt-0.5 text-sm text-neutral-500">{description}</p>
           </div>
-          {aside !== undefined && aside !== null ? <div className="shrink-0">{aside}</div> : null}
+          {aside !== undefined && aside !== null ? (
+            <div className="shrink-0">{aside}</div>
+          ) : null}
         </header>
         {children}
       </Card>
@@ -869,14 +988,19 @@ function ModeSwitch({
   value: PatientMode;
   onChange: (value: PatientMode) => void;
 }) {
-  const options: Array<{ value: PatientMode; label: string; icon: ReactNode }> = [
-    { value: 'nuevo', label: 'Paciente nuevo', icon: <UserPlus className="h-4 w-4" aria-hidden /> },
-    {
-      value: 'registrado',
-      label: 'Paciente registrado',
-      icon: <Users className="h-4 w-4" aria-hidden />,
-    },
-  ];
+  const options: Array<{ value: PatientMode; label: string; icon: ReactNode }> =
+    [
+      {
+        value: "nuevo",
+        label: "Paciente nuevo",
+        icon: <UserPlus className="h-4 w-4" aria-hidden />,
+      },
+      {
+        value: "registrado",
+        label: "Paciente registrado",
+        icon: <Users className="h-4 w-4" aria-hidden />,
+      },
+    ];
   return (
     <div
       role="radiogroup"
@@ -893,10 +1017,10 @@ function ModeSwitch({
             aria-checked={selected}
             onClick={() => onChange(option.value)}
             className={cn(
-              'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               selected
-                ? 'bg-white text-purple-900 shadow-xs ring-1 ring-neutral-200'
-                : 'text-neutral-500 hover:text-neutral-900',
+                ? "bg-white text-purple-900 shadow-xs ring-1 ring-neutral-200"
+                : "text-neutral-500 hover:text-neutral-900",
             )}
           >
             {option.icon}
@@ -936,7 +1060,7 @@ function PatientPicker({
   const listId = useId();
 
   const query = search.trim();
-  const showList = open && query !== '';
+  const showList = open && query !== "";
   // The server filters, but its answer arrives after the debounce and the round trip; meanwhile
   // the list on screen would be the previous query's. Filtering here too, with the same rule the
   // API uses (no case, no accents), makes the first keystroke narrow the list at once and keeps a
@@ -944,14 +1068,14 @@ function PatientPicker({
   const needle = normalizeForSearch(query);
   const matches = fetched.filter(
     (p) =>
-      normalizeForSearch(p.fullName ?? '').includes(needle) ||
+      normalizeForSearch(p.fullName ?? "").includes(needle) ||
       normalizeForSearch(p.patientCode).includes(needle),
   );
   const safeActive = Math.min(active, Math.max(matches.length - 1, 0));
 
   const choose = (patient: Patient): void => {
     onSelect(patient);
-    onSearch('');
+    onSearch("");
     setOpen(false);
   };
 
@@ -961,15 +1085,21 @@ function PatientPicker({
       <div className="flex flex-wrap items-center gap-4 rounded-lg border border-purple-900/30 bg-purple-50/60 p-4">
         <Initials name={name} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-neutral-900">{name}</p>
+          <p className="truncate text-sm font-semibold text-neutral-900">
+            {name}
+          </p>
           <p className="text-sm text-neutral-500">
             {selected.patientCode}
             {selected.ageYears !== null && selected.ageYears !== undefined
               ? ` · ${selected.ageYears} años`
-              : ''}
-            {selected.sex !== null && selected.sex !== undefined ? ` · ${selected.sex}` : ''}
-            {' · '}
-            {selected.caseCount === 0 ? 'sin visitas previas' : `${selected.caseCount} visita(s)`}
+              : ""}
+            {selected.sex !== null && selected.sex !== undefined
+              ? ` · ${selected.sex}`
+              : ""}
+            {" · "}
+            {selected.caseCount === 0
+              ? "sin visitas previas"
+              : `${selected.caseCount} visita(s)`}
           </p>
         </div>
         <Button
@@ -1001,7 +1131,9 @@ function PatientPicker({
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={
-            showList && matches.length > 0 ? `${listId}-${safeActive}` : undefined
+            showList && matches.length > 0
+              ? `${listId}-${safeActive}`
+              : undefined
           }
           value={search}
           onChange={(event) => {
@@ -1015,17 +1147,17 @@ function PatientPicker({
           onBlur={() => setOpen(false)}
           onKeyDown={(event) => {
             if (!showList) return;
-            if (event.key === 'ArrowDown') {
+            if (event.key === "ArrowDown") {
               event.preventDefault();
               setActive((i) => Math.min(i + 1, matches.length - 1));
-            } else if (event.key === 'ArrowUp') {
+            } else if (event.key === "ArrowUp") {
               event.preventDefault();
               setActive((i) => Math.max(i - 1, 0));
-            } else if (event.key === 'Enter') {
+            } else if (event.key === "Enter") {
               event.preventDefault();
               const patient = matches[safeActive];
               if (patient !== undefined) choose(patient);
-            } else if (event.key === 'Escape') {
+            } else if (event.key === "Escape") {
               setOpen(false);
             }
           }}
@@ -1052,8 +1184,8 @@ function PatientPicker({
             {matches.length === 0 ? (
               loading ? null : (
                 <li className="px-4 py-3 text-sm text-neutral-500">
-                  Ningún paciente coincide con «{query}». Cambie a «Paciente nuevo» para
-                  registrarlo.
+                  Ningún paciente coincide con «{query}». Cambie a «Paciente
+                  nuevo» para registrarlo.
                 </li>
               )
             ) : (
@@ -1070,8 +1202,8 @@ function PatientPicker({
                     onMouseEnter={() => setActive(index)}
                     onClick={() => choose(p)}
                     className={cn(
-                      'flex cursor-pointer items-center gap-3 px-3 py-2.5',
-                      isActive && 'bg-purple-50',
+                      "flex cursor-pointer items-center gap-3 px-3 py-2.5",
+                      isActive && "bg-purple-50",
                     )}
                   >
                     <Initials name={name} small />
@@ -1083,12 +1215,16 @@ function PatientPicker({
                         {p.patientCode}
                         {p.ageYears !== null && p.ageYears !== undefined
                           ? ` · ${p.ageYears} años`
-                          : ''}
-                        {p.sex !== null && p.sex !== undefined ? ` · ${p.sex}` : ''}
+                          : ""}
+                        {p.sex !== null && p.sex !== undefined
+                          ? ` · ${p.sex}`
+                          : ""}
                       </span>
                     </span>
                     <span className="shrink-0 text-xs text-neutral-500">
-                      {p.caseCount === 0 ? 'Sin visitas' : `${p.caseCount} visita(s)`}
+                      {p.caseCount === 0
+                        ? "Sin visitas"
+                        : `${p.caseCount} visita(s)`}
                     </span>
                   </li>
                 );
@@ -1099,7 +1235,8 @@ function PatientPicker({
       </div>
 
       <p className="text-xs text-neutral-500">
-        Elija al paciente de la lista. Si no aparece, cambie a «Paciente nuevo» para registrarlo.
+        Elija al paciente de la lista. Si no aparece, cambie a «Paciente nuevo»
+        para registrarlo.
       </p>
     </div>
   );
@@ -1108,19 +1245,19 @@ function PatientPicker({
 function Initials({ name, small }: { name: string; small?: boolean }) {
   const letters = name
     .split(/\s+/)
-    .filter((part) => part !== '')
+    .filter((part) => part !== "")
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
   return (
     <span
       aria-hidden
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-full bg-purple-50 font-semibold text-purple-900',
-        small === true ? 'h-8 w-8 text-xs' : 'h-11 w-11 text-sm',
+        "flex shrink-0 items-center justify-center rounded-full bg-purple-50 font-semibold text-purple-900",
+        small === true ? "h-8 w-8 text-xs" : "h-11 w-11 text-sm",
       )}
     >
-      {letters === '' ? <UserRound className="h-4 w-4" /> : letters}
+      {letters === "" ? <UserRound className="h-4 w-4" /> : letters}
     </span>
   );
 }
@@ -1136,23 +1273,23 @@ function SummaryItem({
   label: string;
   value: string;
   mono?: boolean;
-  tone?: 'ok' | 'warn';
+  tone?: "ok" | "warn";
 }) {
   return (
     <div className="border-b border-neutral-200 px-4 py-3 last:border-b-0 sm:nth-[n+4]:border-b-0 sm:not-nth-[3n]:border-r">
       <dt className="text-xs text-neutral-500">{label}</dt>
       <dd
         className={cn(
-          'mt-0.5 flex items-center gap-1.5 text-sm font-medium text-neutral-900',
-          mono === true && 'font-mono',
+          "mt-0.5 flex items-center gap-1.5 text-sm font-medium text-neutral-900",
+          mono === true && "font-mono",
         )}
       >
         {tone !== undefined ? (
           <span
             aria-hidden
             className={cn(
-              'h-1.5 w-1.5 shrink-0 rounded-full',
-              tone === 'ok' ? 'bg-emerald-500' : 'bg-amber-500',
+              "h-1.5 w-1.5 shrink-0 rounded-full",
+              tone === "ok" ? "bg-emerald-500" : "bg-amber-500",
             )}
           />
         ) : null}
@@ -1165,18 +1302,19 @@ function SummaryItem({
 /** Lower-case and without diacritics: the rule the API applies to the same search. */
 function normalizeForSearch(value: string): string {
   return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
     .toLowerCase();
 }
 
 function ageFrom(birthDate: string): number | null {
-  if (birthDate === '') return null;
+  if (birthDate === "") return null;
   const born = new Date(birthDate);
   if (Number.isNaN(born.getTime())) return null;
   const now = new Date();
   let age = now.getFullYear() - born.getFullYear();
   const monthDelta = now.getMonth() - born.getMonth();
-  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < born.getDate())) age--;
+  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < born.getDate()))
+    age--;
   return age;
 }

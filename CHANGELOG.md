@@ -5,6 +5,11 @@ versionado con [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Added — «Analizar el caso» exige una foto con acné (27/10/2026)
+
+- El panel de análisis se deshabilita y avisa «Ninguna fotografía muestra acné» cuando ninguna toma
+  obligatoria lo muestra según la segunda opinión (`lacksAcneEvidence`, misma regla que la API).
+
 ### Changed — OE1 se descarga como ficha Excel (26/10/2026)
 
 - «Exportar postest (OE1–OE4)» baja OE1 como `OE1-tiempos-revision-postest.xlsx` (ficha del Anexo 4

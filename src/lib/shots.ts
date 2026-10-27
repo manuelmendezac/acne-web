@@ -24,19 +24,55 @@ export function missingRequiredShots<S extends ShotDefinitionLike>(
   shots: readonly S[],
 ): S[] {
   const present = new Set(
-    images.filter((image) => !image.isHeatmap && image.shotKey !== null).map((i) => i.shotKey),
+    images
+      .filter((image) => !image.isHeatmap && image.shotKey !== null)
+      .map((i) => i.shotKey),
   );
   return shots.filter((shot) => shot.required && !present.has(shot.key));
 }
 
+/**
+ * Whether no required shot shows acne, by what the engine's second opinion saw at upload. Same rule
+ * as the API (`lacksAcneEvidence`), which is what actually refuses the analysis: the latest
+ * photograph of each required shot, and only when every one was checked — a shot with no reading
+ * (older upload, rule switched off) blocks nothing.
+ */
+export function lacksAcneEvidence<S extends ShotDefinitionLike>(
+  images: ReadonlyArray<CaseImageLike & { acneCheck?: string | null }>,
+  shots: readonly S[],
+): boolean {
+  const required = new Set(
+    shots.filter((shot) => shot.required).map((shot) => shot.key),
+  );
+  const latest = new Map<string, string | null>();
+  for (const image of images) {
+    if (
+      !image.isHeatmap &&
+      image.shotKey !== null &&
+      required.has(image.shotKey)
+    ) {
+      latest.set(image.shotKey, image.acneCheck ?? null);
+    }
+  }
+  const readings = [...latest.values()];
+  if (readings.length === 0 || readings.some((reading) => reading === null))
+    return false;
+  return !readings.includes("acne");
+}
+
 /** «Vista general, Perfil izquierdo» — for banners and button hints. */
-export function listShotLabels(shots: ReadonlyArray<{ label: string }>): string {
-  return shots.map((shot) => shot.label).join(', ');
+export function listShotLabels(
+  shots: ReadonlyArray<{ label: string }>,
+): string {
+  return shots.map((shot) => shot.label).join(", ");
 }
 
 /** The label of a shot key, or a neutral fallback for photographs that followed no protocol. */
-export function shotLabel(shots: readonly ShotDefinitionLike[], key: string | null): string {
-  if (key === null) return 'Sin toma asignada';
+export function shotLabel(
+  shots: readonly ShotDefinitionLike[],
+  key: string | null,
+): string {
+  if (key === null) return "Sin toma asignada";
   return shots.find((shot) => shot.key === key)?.label ?? key;
 }
 
@@ -48,6 +84,8 @@ export function pickImageForInference<I extends CaseImageLike & { id: string }>(
   images: readonly I[],
 ): I | undefined {
   const clinical = images.filter((image) => !image.isHeatmap);
-  const frontal = [...clinical].reverse().find((image) => image.shotKey === 'general');
+  const frontal = [...clinical]
+    .reverse()
+    .find((image) => image.shotKey === "general");
   return frontal ?? clinical[clinical.length - 1];
 }
